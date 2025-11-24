@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#define G 9.81
+
 typedef struct {
     float w;
     float x;

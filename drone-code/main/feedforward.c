@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "feedforward.h"
+#include "ibus_protocol.h"
 
 
 //constants for converting forces and moments to motor speed
@@ -13,6 +14,9 @@
 //constants for converting motor speed to control input (not that good right now, only FF to get right stead state speed)
 #define CONTROL_INPUT_OVER_OMEGA_SQUARED 6.863e-6
 #define CONTROL_INPUT_OVER_OMEGA 0.0044
+
+//for controller
+#define CONTROLLER_SENS 1.0 //force (in newtons) applied at max joystick input
 
 Quaternion ref_quat_from_global_forces(Vector3 global_force_vec, float heading) {
     Vector3 z_axis = (Vector3){0.0f, 0.0f, 1.0f};
@@ -43,6 +47,32 @@ Quaternion ref_quat_from_global_forces(Vector3 global_force_vec, float heading) 
     };
 
     return quatmultiply(yaw_quat, yawless_quat);
+}
+
+//finds the reciprocal of the z component of a unit vector in the direction of a quat (essentially ratio between global f_z and local f_z)
+float thrust_multiplier_from_quat(Quaternion quat) {
+    float x = quat.x;
+    float y = quat.y;
+
+    float z = 1.0f - 2.0f * (x * x + y * y);
+    if(z > 1e-6) {
+        return 1.0f / z;
+    } else {
+        return 0.0f;
+    }
+}
+
+static Vector3 joystick_inputs_to_forces(IbusMessage* message) {
+    float force_z = message->throttle * 2.0f * G;
+    float force_x = -CONTROLLER_SENS * message->roll;
+    float force_y = -CONTROLLER_SENS * message->pitch;
+    return (Vector3){force_x, force_y, force_z};
+}
+
+Quaternion joystick_inputs_to_ref_quat_headingless(IbusMessage* message) {
+    Vector3 forces = joystick_inputs_to_forces(message);
+    //ignore heading for now, will take raw heading moment from joystick.
+    return ref_quat_from_global_forces(forces, 0.0f);
 }
 
 Vector3 euler_error_from_quats(Quaternion q_ref, Quaternion q_meas) {
