@@ -36,8 +36,8 @@ PIDController* new_pid(float kP, float kI, float kD, float integral_bound, float
 
 float calculate_pid(PIDController* controller, float measurement, uint64_t timestamp) {
     float error = controller->setpoint - measurement;
-    float elapsed_time = (float)(timestamp - controller->previous_timestamp) / 1e6; //it is assumed timestamp is in micros
-    if (elapsed_time > 1e-6) {
+    float elapsed_time = (float)(timestamp - controller->previous_timestamp) / 1e6f; //it is assumed timestamp is in micros
+    if (elapsed_time > 1e-6f) {
         //compute proportional term
         float proportional_term = controller->kP * error;
         //compute integral term
@@ -46,8 +46,8 @@ float calculate_pid(PIDController* controller, float measurement, uint64_t times
         if (controller->integral > controller->integral_bound) {
             controller->integral = controller->integral_bound;
         }
-        if (controller->integral < -1.0 * controller->integral_bound) {
-            controller->integral = -1.0 * controller->integral_bound;
+        if (controller->integral < -1.0f * controller->integral_bound) {
+            controller->integral = -1.0f * controller->integral_bound;
         }
         float integral_term = controller->kI * controller->integral;
         //compute derivative term
