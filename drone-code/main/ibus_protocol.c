@@ -6,6 +6,7 @@
 
 #include "driver/uart.h"
 #include "driver/gpio.h"
+
 #include "ibus_protocol.h"
 
 #define UART_NUM        UART_NUM_2
