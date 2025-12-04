@@ -9,6 +9,32 @@ Quaternion quatmultiply(Quaternion q1, Quaternion q2) {
     return result;
 }
 
+Quaternion euler_to_quat(Vector3 euler) {
+    float cy = cosf(euler.z * 0.5f);
+    float sy = sinf(euler.z * 0.5f);
+    float cp = cosf(euler.y * 0.5f);
+    float sp = sinf(euler.y * 0.5f);
+    float cr = cosf(euler.x * 0.5f);
+    float sr = sinf(euler.x * 0.5f);
+
+    Quaternion q;
+    q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;
+
+    return q;
+}
+
+
+Vector3 quatrotate(Quaternion q, Vector3 v) {
+    Quaternion v_quat = {0.0f, v.x, v.y, v.z};
+    Quaternion q_conj = {q.w, -q.x, -q.y, -q.z};
+    Quaternion result_quat = quatmultiply(quatmultiply(q, v_quat), q_conj);
+    Vector3 result = {result_quat.x, result_quat.y, result_quat.z};
+    return result;
+}
+
 Vector3 normalize(Vector3 v) {
     float norm = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
     if (norm > 1e-6) {

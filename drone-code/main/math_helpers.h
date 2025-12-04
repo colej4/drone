@@ -19,6 +19,8 @@ typedef struct {
 } Vector3;
 
 Quaternion quatmultiply(Quaternion q1, Quaternion q2);
+Quaternion euler_to_quat(Vector3 euler);
+Vector3 quatrotate(Quaternion q, Vector3 v);
 Vector3 normalize(Vector3 v);
 float dot(Vector3 v1, Vector3 v2);
 Vector3 cross(Vector3 v1, Vector3 v2);

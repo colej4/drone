@@ -69,6 +69,10 @@ static Vector3 joystick_inputs_to_forces(IbusMessage* message) {
     return (Vector3){force_x, force_y, force_z};
 }
 
+float joystick_input_to_global_thrust(IbusMessage* message) {
+    return message->throttle * 2.0f * G;
+}
+
 Quaternion joystick_inputs_to_ref_quat_headingless(IbusMessage* message) {
     Vector3 forces = joystick_inputs_to_forces(message);
     //ignore heading for now, will take raw heading moment from joystick.

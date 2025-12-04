@@ -12,7 +12,6 @@ typedef struct {
 } PIDController;
 
 typedef struct {
-    gptimer_handle_t timer;
     QueueHandle_t input_queue;   // Queue for setpoint and measurement
     QueueHandle_t output_mailbox;  // Mailbox for control output
     float kP;
@@ -37,5 +36,7 @@ typedef struct {
 PIDController* new_pid(float kP, float kI, float kD, float integral_bound, float derivative_ema_gain, float initial_setpoint, uint64_t timestamp);
 
 float calculate_pid(PIDController* controller, float measurement, uint64_t timestamp);
+
+float calculate_pid_with_err(PIDController* controller, float error, uint64_t timestamp);
 
 void vPID_controller(void *pvParameters);

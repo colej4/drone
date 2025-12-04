@@ -11,7 +11,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#include "driver/gptimer.h"
+#include "driver/timer.h"
 
 #include "pid.h"
 
@@ -62,16 +62,44 @@ float calculate_pid(PIDController* controller, float measurement, uint64_t times
     } else {
         return controller->kP * error + controller->kI * controller->integral;
     }
-
-
 }
+
+float calculate_pid_with_err(PIDController* controller, float error, uint64_t timestamp) {
+    float elapsed_time = (float)(timestamp - controller->previous_timestamp) / 1e6f; //it is assumed timestamp is in micros
+    if (elapsed_time > 1e-6f) {
+        //compute proportional term
+        float proportional_term = controller->kP * error;
+        //compute integral term
+        controller->integral += error * elapsed_time;
+        //constrain integral term so |integral| < bound
+        if (controller->integral > controller->integral_bound) {
+            controller->integral = controller->integral_bound;
+        }
+        if (controller->integral < -1.0f * controller->integral_bound) {
+            controller->integral = -1.0f * controller->integral_bound;
+        }
+        float integral_term = controller->kI * controller->integral;
+        //compute derivative term
+        float raw_derivative = (error - controller->previous_error) / elapsed_time;
+        controller->filtered_derivative = controller->derivative_ema_gain * raw_derivative + (1.0 - controller->derivative_ema_gain) * controller->filtered_derivative;
+        float derivative_term = controller->kD * controller->filtered_derivative;
+        //update timestamp and error
+        controller->previous_error = error;
+        controller->previous_timestamp = timestamp;
+
+        return proportional_term + integral_term + derivative_term;
+    } else {
+        return controller->kP * error + controller->kI * controller->integral;
+    }
+}
+
 
 void vPID_controller(void *pvParameters) {
     //Read parameters and set initial values
     const TickType_t max_wait = pdMS_TO_TICKS(5);
     PIDConfig* pid_config = (PIDConfig *) pvParameters;
     uint64_t initial_timestamp;
-    gptimer_get_raw_count(pid_config->timer, &initial_timestamp);
+    timer_get_counter_value(TIMER_GROUP_0, TIMER_0, &initial_timestamp);
     PIDController* pid_controller = new_pid(
         pid_config->kP,
         pid_config->kI,
@@ -92,7 +120,7 @@ void vPID_controller(void *pvParameters) {
                 pid_controller->setpoint = received_message.data;
             } else if (received_message.type == MEASUREMENT) {
                 uint64_t timestamp;
-                gptimer_get_raw_count(pid_config->timer, &timestamp);
+                timer_get_counter_value(TIMER_GROUP_0, TIMER_0, &timestamp);
                 float output = calculate_pid(pid_controller, received_message.data, timestamp);
                 //send output to output queue
                 status = xQueueOverwrite(pid_config->output_mailbox, &output);
