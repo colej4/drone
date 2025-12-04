@@ -3,6 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/i2c.h"
+#include "driver/timer.h"
 
 #include "imu.h"
 #include "math_helpers.h"
@@ -15,7 +16,15 @@
 #define I2C_MASTER_RX_BUF_DISABLE 0
 #define I2C_MASTER_TIMEOUT_MS  100
 
+#define ACCEL_BIAS_X 0.504476
+#define ACCEL_BIAS_Y 0.024793
+#define ACCEL_BIAS_Z 0.042967
+
 #define MPU6050_ADDR           0x68
+
+static float accel_scale_bias = 0.0f;
+static Quaternion imu_to_drone_quat = (Quaternion){0.0f, 0.0f, 0.0f, 0.0f};
+static float gyro_bias_x = 0.0f, gyro_bias_y = 0.0f, gyro_bias_z = 0.0f;
 
 
 static esp_err_t i2c_write_reg(uint8_t dev_addr, uint8_t reg, uint8_t val)
@@ -139,6 +148,13 @@ imu_data_t imu_unit_convert(imu_raw_data_t *raw)
     return data;
 }
 
+void apply_bias_correction(imu_data_t* data)
+{
+    data->ax -= ACCEL_BIAS_X;
+    data->ay -= ACCEL_BIAS_Y;
+    data->az -= ACCEL_BIAS_Z;
+}
+
 int imu_read(imu_data_t *out)
 {
     if (!out) return -1;
@@ -149,20 +165,138 @@ int imu_read(imu_data_t *out)
     }
 
     *out = imu_unit_convert(&raw);
+    apply_bias_correction(out);
     return 0;
 }
+
+void calibrate_imu() {
+    const int num_samples = 4000;
+    imu_data_t data;
+    float ax_sum = 0.0f, ay_sum = 0.0f, az_sum = 0.0f, 
+          gx_sum = 0.0f, gy_sum = 0.0f, gz_sum = 0.0f;
+    printf("Calibrating IMU\n");
+
+    for (int i = 0; i < num_samples; i++) {
+        if (imu_read(&data) == 0) {
+            ax_sum += data.ax;
+            ay_sum += data.ay;
+            az_sum += data.az;
+            gx_sum += data.gx;
+            gy_sum += data.gy;
+            gz_sum += data.gz;
+        }
+        vTaskDelay(pdMS_TO_TICKS(1));
+    }
+
+
+    float ax = ax_sum / num_samples;
+    float ay = ay_sum / num_samples;
+    float az = az_sum / num_samples;
+
+    gyro_bias_x = gx_sum / num_samples;
+    gyro_bias_y = gy_sum / num_samples;
+    gyro_bias_z = gz_sum / num_samples;
+
+    float mag = sqrtf(ax*ax + ay*ay + az*az);
+    float gx = ax/mag, gy = ay/mag, gz = az/mag;
+    accel_scale_bias = mag / G;
+    const float ux=0, uy=0, uz=1; //unit vec up
+
+    // Cross and dot
+    float cx = gy*uz - gz*uy;
+    float cy = gz*ux - gx*uz;
+    float cz = gx*uy - gy*ux;
+    float dot = gx*ux + gy*uy + gz*uz;
+
+    float axis_mag = sqrtf(cx*cx + cy*cy + cz*cz);
+
+    if (axis_mag < 1e-6f) {
+        imu_to_drone_quat.w = 1;
+        imu_to_drone_quat.x = 0;
+        imu_to_drone_quat.y = 0;
+        imu_to_drone_quat.z = 0;
+    } else {
+        float angle = acosf(dot);
+
+        cx /= axis_mag;
+        cy /= axis_mag;
+        cz /= axis_mag;
+
+        float s = sinf(angle/2.0f);
+        imu_to_drone_quat.w = cosf(angle/2.0f);
+        imu_to_drone_quat.x = cx * s;
+        imu_to_drone_quat.y = cy * s;
+        imu_to_drone_quat.z = cz * s;
+    }
+
+    printf("Quaternion to rotate IMU to drone frame: w=%f x=%f y=%f z=%f\n",
+           imu_to_drone_quat.w,
+           imu_to_drone_quat.x,
+           imu_to_drone_quat.y,
+           imu_to_drone_quat.z);
+}
+
+
+
+int imu_read_calibrated(imu_data_t *out)
+{
+    if (!out) return -1;
+
+    imu_raw_data_t raw;
+    if (imu_read_raw(&raw) != 0) {
+        return -1;
+    }
+
+    *out = imu_unit_convert(&raw);
+    apply_bias_correction(out);
+    out->ax /= accel_scale_bias;
+    out->ay /= accel_scale_bias;
+    out->az /= accel_scale_bias;
+
+
+    Vector3 accel_vec = {out->ax, out->ay, out->az};
+
+    accel_vec = quatrotate(imu_to_drone_quat, accel_vec);
+
+    out->ax = accel_vec.x;
+    out->ay = accel_vec.y;
+    out->az = accel_vec.z;
+
+    Vector3 gyro_vec = {out->gx - gyro_bias_x, out->gy - gyro_bias_y, out->gz - gyro_bias_z};
+    gyro_vec = quatrotate(imu_to_drone_quat, gyro_vec);
+    out->gx = gyro_vec.x;
+    out->gy = gyro_vec.y;
+    out->gz = gyro_vec.z;
+
+    return 0;
+}
+
+
 
 void imu_task(void *arg)
 {
     imu_data_t data;
 
+    QueueHandle_t send_queue = *(QueueHandle_t*)arg;
+
+
+    calibrate_imu();
+
     while (1) {
-        if (imu_read(&data) == 0) {
-            printf("ACC: %6f %6f %6f  GYRO: %6f %6f %6f  TEMP: %6f\n",
-                   data.ax, data.ay, data.az,
-                   data.gx, data.gy, data.gz,
-                   data.temp_c);
+        if (imu_read_calibrated(&data) == 0) {
+            timestamped_imu_data_t ts_data;
+            ts_data.data = data;
+            timer_get_counter_value(TIMER_GROUP_0, TIMER_0, &ts_data.timestamp);
+            // printf("Calibrated: %4f, %4f, %4f, %4f, %4f, %4f",
+            // data.ax, data.ay, data.az, data.gx, data.gy, data.gz);
+            BaseType_t result = xQueueSendToBack(send_queue, &ts_data, 0);
+            if (result != pdTRUE) {
+                printf("IMU task: queue full\n");
+            }
+        } else {
+            printf("IMU read error\n");
         }
-        vTaskDelay(pdMS_TO_TICKS(1));   // 10 Hz
+
+        vTaskDelay(pdMS_TO_TICKS(1));   // 1000 Hz
     }
 }

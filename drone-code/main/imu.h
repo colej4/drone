@@ -14,6 +14,12 @@ typedef struct {
     float temp_c;
 } imu_data_t;
 
+typedef struct {
+    imu_data_t data;
+    uint64_t timestamp; // in microseconds
+} timestamped_imu_data_t;
+
+
 void imu_i2c_init(void);
 void imu_scan(void);
 int  imu_init(void);
