@@ -5,6 +5,7 @@
 
 #include "imu.h"
 #include "state_estimator.h"
+#include "math_helpers.h"
 
 #include "driver/timer.h"
 
@@ -34,6 +35,14 @@ void app_main(void)
 {
 
     QueueHandle_t imu_data_queue = xQueueCreate(10, sizeof(timestamped_imu_data_t));
+    QueueHandle_t state_estimate_mailbox = xQueueCreate(1, sizeof(Vector3));
+    QueueHandle_t ibus_mailbox = xQueueCreate(1, sizeof(IbusMessage));
+
+    StateEstimatorConfig state_estimator_config = {
+        .imu_data_queue = imu_data_queue,
+        .state_estimate_mailbox = state_estimate_mailbox
+    };
+
     imu_i2c_init();
 
     if (imu_init() != 0) {
@@ -43,6 +52,7 @@ void app_main(void)
 
     init_timer();
 
+    xTaskCreate(ibus_task, "ibus_task", 4096, (void*)&ibus_mailbox, 5, NULL);
     xTaskCreate(imu_task, "imu_task", 4096, (void*)&imu_data_queue, 5, NULL);
-    xTaskCreate(state_estimator_task, "imu_task", 4096, (void*)&imu_data_queue, 5, NULL);
+    xTaskCreate(state_estimator_task, "state_estimator_task", 4096, (void*)&state_estimator_config, 5, NULL);
 }

@@ -49,7 +49,7 @@ void ibus_uart_init(void) {
     printf("IBUS UART initialized.");
 }
 
-void uart_event_task(void *arg) {
+void ibus_task(void *arg) {
     uart_event_t event;
     uint8_t data[BUF_SIZE];
 
@@ -58,7 +58,6 @@ void uart_event_task(void *arg) {
 
     QueueHandle_t send_mailbox = *(QueueHandle_t*)arg;
 
-    TickType_t last_print = 0;
 
     for (;;) {
         // Wait for UART events
