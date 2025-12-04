@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IMU_H
+#define IMU_H
 
 #include <stdint.h>
 
@@ -27,3 +28,5 @@ int  imu_read_raw(imu_raw_data_t *out);
 imu_data_t imu_unit_convert(imu_raw_data_t *raw);
 int  imu_read(imu_data_t *out);
 void imu_task(void *arg);
+
+#endif
