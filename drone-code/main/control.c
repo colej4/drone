@@ -182,11 +182,17 @@ void control_task(void* arg)
                    roll_moment, pitch_moment, yaw_moment, local_z_force);
             printf("us: %lu, %lu, %lu, %lu\n",
                    motor_us[0], motor_us[1], motor_us[2], motor_us[3]);
+            printf("vra: %f\n", controller_input.vra);
         }
-
-
-        // Write PWM pulses to ESCs
-        esc_write_us_4(motor_us);
+        
+        bool emergency_stop = false;
+        if (controller_input.vra > 0.5f) {
+            emergency_stop = true;
+        }
+        if (!emergency_stop) {
+            // Write PWM pulses to ESCs
+            esc_write_us_4(motor_us);
+        }
 
         // 1 kHz loop (adjust to your desired controller rate)
         xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1));
