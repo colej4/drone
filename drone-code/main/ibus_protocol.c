@@ -17,6 +17,11 @@
 
 static QueueHandle_t uart_queue;
 
+typedef enum {
+    IBUS_SEARCH = 0,
+    IBUS_COLLECT
+} ibus_parse_state_t;
+
 uint16_t flip_endian_16(uint16_t value) {
     return (value >> 8) | (value << 8);
 }
@@ -53,8 +58,14 @@ void ibus_task(void *arg) {
     uart_event_t event;
     uint8_t data[BUF_SIZE];
 
+    ibus_parse_state_t state = IBUS_SEARCH;
+
     uint8_t pkt[IBUS_PKT_SIZE];
     int pkt_index = 0;
+
+    //for finding header across uart event boundaries
+    uint8_t prev = 0;          
+    bool prev_valid = false;   
 
     QueueHandle_t send_mailbox = *(QueueHandle_t*)arg;
 
@@ -72,61 +83,69 @@ void ibus_task(void *arg) {
 
                 // Process each byte
                 for (int i = 0; i < len; i++) {
+                    switch(state) {
+                    case IBUS_SEARCH:
+                        printf("Invalid IBUS packet header: 0x%02X 0x%02X\n", pkt[0], pkt[1]);
+                        if (prev_valid && prev == 0x20 && data[i] == 0x40) {
+                            printf("recovered start of packet at byte %d\n", i-1);
+                            // Found start of IBUS packet
+                            pkt_index = 2;
+                            pkt[0] = 0x20;
+                            pkt[1] = 0x40;
+                            state = IBUS_COLLECT;
+                        }
+                        break;
+                    case IBUS_COLLECT:
+                        pkt[pkt_index++] = data[i];
 
-                    pkt[pkt_index++] = data[i];
+                        //full packet recieved
+                        if (pkt_index >= IBUS_PKT_SIZE) {
+                            pkt_index = 0;
 
-                    //full packet recieved
-                    if (pkt_index >= IBUS_PKT_SIZE) {
-                        pkt_index = 0;
+                            // Check header
+                            if (pkt[0] == 0x20 && pkt[1] == 0x40) {
 
-                        // Check header
-                        if (pkt[0] == 0x20 && pkt[1] == 0x40) {
+                                uint16_t rx_cs = bytes_to_uint16(pkt[30], pkt[31]);
+                                uint16_t calc_cs = calculate_checksum(pkt, 30);
 
-                            uint16_t rx_cs = bytes_to_uint16(pkt[30], pkt[31]);
-                            uint16_t calc_cs = calculate_checksum(pkt, 30);
+                                if (rx_cs == calc_cs) {
+                                    TickType_t now = xTaskGetTickCount();
+                                    
 
-                            if (rx_cs == calc_cs) {
-                                TickType_t now = xTaskGetTickCount();
-                                
+                                    uint16_t channels[6];
+                                    for (int ch = 0; ch < 6; ch++) {
+                                        uint16_t val =
+                                            pkt[2 + ch*2] |
+                                            (pkt[3 + ch*2] << 8);
+                                        channels[ch] = val;
+                                    }
+                                    float roll = ((float)channels[0] - 1500.0f) / 500.0f;
+                                    float pitch = ((float)channels[1] - 1500.0f) / 500.0;
+                                    float throttle = ((float)channels[2] - 1000.0f) / 1000.0f;
+                                    float yaw = ((float)channels[3] - 1500.0f) / 500.0f;
+                                    float vra = ((float)channels[4] - 1000.0f) / 1000.0f;
+                                    float vrb = ((float)channels[5] - 1000.0f) / 1000.0f;
 
-                                uint16_t channels[6];
-                                for (int ch = 0; ch <= 6; ch++) {
-                                    uint16_t val =
-                                        pkt[2 + ch*2] |
-                                        (pkt[3 + ch*2] << 8);
-                                    channels[ch] = val;
-                                }
-                                float roll = ((float)channels[0] - 1500.0f) / 500.0f;
-                                float pitch = ((float)channels[1] - 1500.0f) / 500.0;
-                                float throttle = ((float)channels[2] - 1000.0f) / 1000.0f;
-                                float yaw = ((float)channels[3] - 1500.0f) / 500.0f;
-                                float vra = ((float)channels[4] - 1000.0f) / 1000.0f;
-                                float vrb = ((float)channels[5] - 1000.0f) / 1000.0f;
+                                    IbusMessage msg = {
+                                        .throttle = throttle,
+                                        .yaw = yaw,
+                                        .pitch = pitch,
+                                        .roll = roll,
+                                        .vra = vra,
+                                        .vrb = vrb
+                                    };
 
-                                IbusMessage msg = {
-                                    .throttle = throttle,
-                                    .yaw = yaw,
-                                    .pitch = pitch,
-                                    .roll = roll,
-                                    .vra = vra,
-                                    .vrb = vrb
-                                };
+                                    xQueueOverwrite(send_mailbox, &msg);
 
-                                xQueueOverwrite(send_mailbox, &msg);
-                            } else {
+                                } else {
                                 printf("Checksum error: received 0x%04X, calculated 0x%04X\n", rx_cs, calc_cs);
+                                }
                             }
-                        } else {
-                            printf("Invalid IBUS packet header: 0x%02X 0x%02X\n", pkt[0], pkt[1]);
-                            if (data[i-1] == 0x20 && data[i] == 0x40) {
-                                printf("recovered start of packet at byte %d\n", i-1);
-                                // Found start of IBUS packet
-                                pkt_index = 2;
-                                pkt[0] = 0x20;
-                                pkt[1] = 0x40;
-                            }
+                            break;
                         }
                     }
+                    prev_valid = true;
+                    prev = data[i];
                 }
                 break;
 
