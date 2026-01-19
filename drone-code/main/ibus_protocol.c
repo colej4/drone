@@ -58,7 +58,6 @@ void ibus_task(void *arg) {
 
     QueueHandle_t send_mailbox = *(QueueHandle_t*)arg;
 
-
     for (;;) {
         // Wait for UART events
         if (xQueueReceive(uart_queue, &event, portMAX_DELAY)) {

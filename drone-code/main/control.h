@@ -6,4 +6,8 @@ typedef struct {
     QueueHandle_t state_estimate_mailbox;
 } ControlConfig;
 
+void control_task(void* arg);
+
+void esc_home_task(void* arg);
+
 #endif

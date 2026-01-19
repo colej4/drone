@@ -6,11 +6,15 @@
 #include "imu.h"
 #include "state_estimator.h"
 #include "math_helpers.h"
+#include "ibus_protocol.h"
+#include "control.h"
 
 #include "driver/timer.h"
 
 
 #define TIMER_DIVIDER         80  //  Hardware timer clock divider
+
+#define HOME_ESC 0
 
 void init_timer()
 {
@@ -45,14 +49,29 @@ void app_main(void)
 
     imu_i2c_init();
 
-    if (imu_init() != 0) {
+    while (imu_init() != 0) {
         printf("IMU init FAILED\n");
-        return;
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
+    printf("IMU initialized successfully\n");
+
     init_timer();
+
+    ibus_uart_init();
 
     xTaskCreate(ibus_task, "ibus_task", 4096, (void*)&ibus_mailbox, 5, NULL);
     xTaskCreate(imu_task, "imu_task", 4096, (void*)&imu_data_queue, 5, NULL);
     xTaskCreate(state_estimator_task, "state_estimator_task", 4096, (void*)&state_estimator_config, 5, NULL);
+    #if HOME_ESC
+    xTaskCreate(esc_home_task, "esc_home_task", 4096, (void*)&(ControlConfig){
+        .ibus_mailbox = ibus_mailbox,
+        .state_estimate_mailbox = state_estimate_mailbox
+    }, 5, NULL);
+    #else
+    xTaskCreate(control_task, "control_task", 4096, (void*)&(ControlConfig){
+        .ibus_mailbox = ibus_mailbox,
+        .state_estimate_mailbox = state_estimate_mailbox
+    }, 5, NULL);
+    #endif
 }

@@ -8,15 +8,19 @@
 //constants for converting forces and moments to motor speed
 #define MOTOR_LEVER_ARM 0.15556 //0.22 / sqrt(2) meters for 440mm rod
 #define MAX_OMEGA_SQUARED 5234944.0f // approx (2288 rad/s)^2 (approximation of 2200kv motor at 10V)
-#define OMEGA_SQUARED_OVER_FORCE 3337.3729 // proportionality constant between force and omega^2 (approximation from MATLAB)
+#define OMEGA_SQUARED_OVER_FORCE 27685.4928 // proportionality constant between force and omega^2 (approximation from MATLAB)
 #define OMEGA_SQUARED_OVER_Z_MOMENT 287356.32 // proportionality constant between z moment and omega^2 (approximation from MATLAB)
 
 //constants for converting motor speed to control input (not that good right now, only FF to get right stead state speed)
 #define CONTROL_INPUT_OVER_OMEGA_SQUARED 6.863e-6
 #define CONTROL_INPUT_OVER_OMEGA 0.0044
 
+#define MAX_THRUST_NEWTONS 20.0f //maximum thrust in newtons
+#define MIN_THRUST_NEWTONS 0.5f  //minimum thrust in newtons
+
+
 //for controller
-#define CONTROLLER_SENS 1.0 //force (in newtons) applied at max joystick input
+#define CONTROLLER_SENS 4.0 //force (in newtons) applied at max joystick input
 
 Quaternion ref_quat_from_global_forces(Vector3 global_force_vec, float heading) {
     Vector3 z_axis = (Vector3){0.0f, 0.0f, 1.0f};
@@ -70,7 +74,14 @@ static Vector3 joystick_inputs_to_forces(IbusMessage* message) {
 }
 
 float joystick_input_to_global_thrust(IbusMessage* message) {
-    return message->throttle * 2.0f * G;
+    float thrust = message->throttle * 2.0f * G;
+    if (thrust > MAX_THRUST_NEWTONS) {
+        thrust = MAX_THRUST_NEWTONS;
+    }
+    if (thrust < MIN_THRUST_NEWTONS) {
+        thrust = 0.0f;
+    }
+    return thrust;
 }
 
 Quaternion joystick_inputs_to_ref_quat_headingless(IbusMessage* message) {
@@ -93,7 +104,7 @@ Vector3 euler_error_from_quats(Quaternion q_ref, Quaternion q_meas) {
     float theta = 2.0f * acosf(fmaxf(fminf(q_err.w, 1.0f), -1.0f));
     float sin_half_theta = sinf(theta / 2.0f);
     if (fabs(sin_half_theta) < 1e-6) {
-        printf("singularity in euler error calculation\n");
+        // printf("singularity in euler error calculation\n");
         euler_error = (Vector3){0.0f, 0.0f, 0.0f};
     } else {
         euler_error.x = (q_err.x / sin_half_theta) * theta;
@@ -105,10 +116,10 @@ Vector3 euler_error_from_quats(Quaternion q_ref, Quaternion q_meas) {
 
 //thrust is in local frame here, omega_squared_array of len 4
 static void calculate_omega_squared(float* omega_squared_array, float m_x, float m_y, float m_z, float thrust_z) {
-    float f_0 = ((m_x + m_y) * MOTOR_LEVER_ARM + thrust_z) / 4.0f;
-    float f_1 = ((-m_x + m_y) * MOTOR_LEVER_ARM + thrust_z) / 4.0f;
-    float f_2 = ((-m_x - m_y) * MOTOR_LEVER_ARM + thrust_z) / 4.0f;
-    float f_3 = ((m_x - m_y) * MOTOR_LEVER_ARM + thrust_z) / 4.0f;
+    float f_0 = ((m_x + m_y) / MOTOR_LEVER_ARM + thrust_z) / 4.0f;
+    float f_1 = ((-m_x + m_y) / MOTOR_LEVER_ARM + thrust_z) / 4.0f;
+    float f_2 = ((-m_x - m_y) / MOTOR_LEVER_ARM + thrust_z) / 4.0f;
+    float f_3 = ((m_x - m_y) / MOTOR_LEVER_ARM + thrust_z) / 4.0f;
 
     float omega_0_squared = OMEGA_SQUARED_OVER_FORCE * f_0 - OMEGA_SQUARED_OVER_Z_MOMENT * m_z;
     float omega_1_squared = OMEGA_SQUARED_OVER_FORCE * f_1 + OMEGA_SQUARED_OVER_Z_MOMENT * m_z;
@@ -131,16 +142,13 @@ static void calculate_control_input_from_omega_squared(float* control_input_arra
             max_omega_squared_mag = fabs(omega_squared_array[i]);
         }
     }
-    if (max_omega_squared_mag > MAX_OMEGA_SQUARED) {
-        float scaling_factor = MAX_OMEGA_SQUARED / max_omega_squared_mag;
-        for(int i = 0; i < 4; i++) {
-            omega_array[i] = signum(omega_squared_array[i]) * sqrt(fabs(omega_squared_array[i])) * scaling_factor;
-        }
-    } else {
-        for(int i = 0; i < 4; i++) {
-            omega_array[i] = signum(omega_squared_array[i]) * sqrt(fabs(omega_squared_array[i]));
-        }
+    //maybe should implement better saturation here?
+    for (int i = 0; i < 4; i++) {
+        if (omega_squared_array[i] < 0) omega_squared_array[i] = 0;
+        if (omega_squared_array[i] > MAX_OMEGA_SQUARED) omega_squared_array[i] = MAX_OMEGA_SQUARED;
+        omega_array[i] = sqrtf(omega_squared_array[i]);
     }
+
 
     for(int i = 0; i < 4; i++) {
         control_input_array[i] = omega_squared_array[i] * CONTROL_INPUT_OVER_OMEGA_SQUARED + omega_array[i] * CONTROL_INPUT_OVER_OMEGA;
