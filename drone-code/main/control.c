@@ -22,7 +22,7 @@
 #define MOTOR3_PIN 14
 
 // ---------------- ESC / LEDC configuration ----------------
-#define ESC_HZ              50
+#define ESC_HZ              250
 #define LEDC_MODE           LEDC_LOW_SPEED_MODE
 #define LEDC_TIMER          LEDC_TIMER_0
 #define LEDC_RES            LEDC_TIMER_16_BIT
@@ -170,6 +170,20 @@ void control_task(void* arg)
             motor_us[i] = (uint32_t)(us_f + 0.5f);              // round to nearest
         }
 
+        bool emergency_stop = false;
+        if (controller_input.vra > 0.5f) {
+            emergency_stop = true;
+        }
+        if (emergency_stop) {
+            motor_us[0] = 0;
+            motor_us[1] = 0;
+            motor_us[2] = 0;
+            motor_us[3] = 0;
+        }
+
+        esc_write_us_4(motor_us);
+
+
         if (timestamp - last_print_timestamp > 500000) {
             last_print_timestamp = timestamp;
             printf("Target Orientation - Roll: %f, Pitch: %f\n",
@@ -185,14 +199,6 @@ void control_task(void* arg)
             printf("vra: %f\n", controller_input.vra);
         }
         
-        bool emergency_stop = false;
-        if (controller_input.vra > 0.5f) {
-            emergency_stop = true;
-        }
-        if (!emergency_stop) {
-            // Write PWM pulses to ESCs
-            esc_write_us_4(motor_us);
-        }
 
         // 1 kHz loop (adjust to your desired controller rate)
         xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1));

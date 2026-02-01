@@ -8,7 +8,7 @@
 //constants for converting forces and moments to motor speed
 #define MOTOR_LEVER_ARM 0.15556 //0.22 / sqrt(2) meters for 440mm rod
 #define MAX_OMEGA_SQUARED 5234944.0f // approx (2288 rad/s)^2 (approximation of 2200kv motor at 10V)
-#define OMEGA_SQUARED_OVER_FORCE 27685.4928 // proportionality constant between force and omega^2 (approximation from MATLAB)
+#define OMEGA_SQUARED_OVER_FORCE 125000.00 // proportionality constant between force and omega^2 (approximation from MATLAB)
 #define OMEGA_SQUARED_OVER_Z_MOMENT 287356.32 // proportionality constant between z moment and omega^2 (approximation from MATLAB)
 
 //constants for converting motor speed to control input (not that good right now, only FF to get right stead state speed)
