@@ -8,11 +8,11 @@
 #include "driver/ledc.h"
 #include "esp_err.h"
 
-#include "feedforward.h"
-#include "control.h"
-#include "pid.h"
-#include "math_helpers.h"
-#include "ibus_protocol.h"
+#include "feedforward.hpp"
+#include "control.hpp"
+#include "pid.hpp"
+#include "math_helpers.hpp"
+#include "ibus_protocol.hpp"
 
 //esp logging
 #include "esp_log.h"
@@ -60,28 +60,26 @@ static inline uint32_t esc_us_to_duty(uint32_t pulse_us)
 static void esc_ledc_init(void)
 {
     // Timer
-    ledc_timer_config_t tcfg = {
-        .speed_mode       = LEDC_MODE,
-        .timer_num        = LEDC_TIMER,
-        .duty_resolution  = LEDC_RES,
-        .freq_hz          = ESC_HZ,
-        .clk_cfg          = LEDC_AUTO_CLK,
-    };
+    ledc_timer_config_t tcfg = {};
+    tcfg.speed_mode       = LEDC_MODE;
+    tcfg.timer_num        = LEDC_TIMER;
+    tcfg.duty_resolution  = LEDC_RES;
+    tcfg.freq_hz          = ESC_HZ;
+    tcfg.clk_cfg          = LEDC_AUTO_CLK;
     ESP_ERROR_CHECK(ledc_timer_config(&tcfg));
 
     const int gpios[4] = { MOTOR0_PIN, MOTOR1_PIN, MOTOR2_PIN, MOTOR3_PIN };
     const ledc_channel_t chs[4] = { LEDC_CHANNEL_0, LEDC_CHANNEL_1, LEDC_CHANNEL_2, LEDC_CHANNEL_3 };
 
     for (int i = 0; i < 4; i++) {
-        ledc_channel_config_t ccfg = {
-            .gpio_num   = gpios[i],
-            .speed_mode = LEDC_MODE,
-            .channel    = chs[i],
-            .timer_sel  = LEDC_TIMER,
-            .duty       = 0,
-            .hpoint     = 0,
-            .intr_type  = LEDC_INTR_DISABLE,
-        };
+        ledc_channel_config_t ccfg = {};
+        ccfg.gpio_num   = gpios[i];
+        ccfg.speed_mode = LEDC_MODE;
+        ccfg.channel    = chs[i];
+        ccfg.timer_sel  = LEDC_TIMER;
+        ccfg.duty       = 0;
+        ccfg.hpoint     = 0;
+        ccfg.intr_type  = LEDC_INTR_DISABLE;
         ESP_ERROR_CHECK(ledc_channel_config(&ccfg));
     }
 
@@ -221,7 +219,6 @@ void esc_home_task(void* arg)
 
     ControlConfig* config = (ControlConfig*)arg;
     QueueHandle_t ibus_mailbox = config->ibus_mailbox;
-    QueueHandle_t state_estimate_mailbox = config->state_estimate_mailbox;
 
     uint64_t initial_timestamp;
     uint64_t last_print_timestamp = 0;

@@ -13,7 +13,7 @@
 
 #include "driver/timer.h"
 
-#include "pid.h"
+#include "pid.hpp"
 
 //esp logging
 #include "esp_log.h"

@@ -3,7 +3,6 @@
         ".env*": "dotenv",
         "uart.h": "c",
         "gpio.h": "c",
-        "imu.h": "c"
     },
 
 }

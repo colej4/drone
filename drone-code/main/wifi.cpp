@@ -7,7 +7,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
-#include "wifi.h"
+#include "wifi.hpp"
 
 #include "lwip/ip_addr.h"
 
@@ -75,16 +75,11 @@ void wifi_init_sta(void)
     ESP_ERROR_CHECK(esp_event_handler_register(
         IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL));
 
-    wifi_config_t wifi_config = {
-        .sta = {
-            .ssid = WIFI_SSID,
-            .password = WIFI_PASS,
-            .pmf_cfg = {
-                .capable = true,
-                .required = false,
-            },
-        },
-    };
+    wifi_config_t wifi_config = {};
+    strncpy((char*)wifi_config.sta.ssid, (const char*)WIFI_SSID, sizeof(wifi_config.sta.ssid) - 1);
+    strncpy((char*)wifi_config.sta.password, (const char*)WIFI_PASS, sizeof(wifi_config.sta.password) - 1);
+    wifi_config.sta.pmf_cfg.capable = true;
+    wifi_config.sta.pmf_cfg.required = false;
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
