@@ -11,18 +11,23 @@
 
 #include "driver/timer.h"
 
+#include "wifi.h"
+#include "wifi_logger.h"
+
 //esp logging
 #include "esp_log.h"
 static const char* TAG = "main";
-
 
 #define TIMER_DIVIDER         80  //  Hardware timer clock divider
 
 #define HOME_ESC 0
 
+#define WIFI_LOGGING 1
+
+
+
 void init_timer()
 {
-    /* Select and initialize basic parameters of the timer */
     timer_config_t config = {
         .divider = TIMER_DIVIDER,
         .counter_dir = TIMER_COUNT_UP,
@@ -31,8 +36,6 @@ void init_timer()
     }; // default clock source is APB
     timer_init(TIMER_GROUP_0, TIMER_0, &config);
 
-    /* Timer's counter will initially start from value below.
-       Also, if auto_reload is set, this value will be automatically reload on alarm */
     timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
 
 
@@ -42,7 +45,13 @@ void init_timer()
 void app_main(void)
 {
     //set log levels
-    esp_log_level_set("*", ESP_LOG_DEBUG);
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
+
+    #if WIFI_LOGGING
+    wifi_init_sta();
+    // wait_for_wifi();
+    log_stream_init_udp("192.168.0.113", 9000);
+    #endif
 
     QueueHandle_t imu_data_queue = xQueueCreate(10, sizeof(timestamped_imu_data_t));
     QueueHandle_t state_estimate_mailbox = xQueueCreate(1, sizeof(Vector3));
