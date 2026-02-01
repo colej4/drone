@@ -9,6 +9,10 @@
 
 #include "ibus_protocol.h"
 
+//esp logging
+#include "esp_log.h"
+static const char* TAG = "ibus_protocol";
+
 #define UART_NUM        UART_NUM_2
 #define UART_RX_PIN     GPIO_NUM_16
 #define UART_TX_PIN     UART_PIN_NO_CHANGE
@@ -51,7 +55,7 @@ void ibus_uart_init(void) {
     ESP_ERROR_CHECK(uart_set_pin(UART_NUM, UART_TX_PIN, UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     // Install driver with RX buffer
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM, BUF_SIZE, 0, 64, &uart_queue, 0));
-    printf("IBUS UART initialized.");
+    ESP_LOGI(TAG, "IBUS UART initialized.");
 }
 
 void ibus_task(void *arg) {
@@ -78,16 +82,16 @@ void ibus_task(void *arg) {
                 // Read the incoming bytes into 'data'
                 int len = uart_read_bytes(UART_NUM, data, event.size, 0);
                 if (len != 32) {
-                    printf("Warning: Received %d bytes from UART\n", len);
+                    ESP_LOGW(TAG, "Received %d bytes from UART instead of 32", len);
                 }
 
                 // Process each byte
                 for (int i = 0; i < len; i++) {
                     switch(state) {
                     case IBUS_SEARCH:
-                        printf("Invalid IBUS packet header: 0x%02X 0x%02X\n", pkt[0], pkt[1]);
+                        ESP_LOGW(TAG, "Invalid IBUS packet header: 0x%02X 0x%02X", pkt[0], pkt[1]);
                         if (prev_valid && prev == 0x20 && data[i] == 0x40) {
-                            printf("recovered start of packet at byte %d\n", i-1);
+                            ESP_LOGI(TAG, "Recovered start of packet at byte %d", i-1);
                             // Found start of IBUS packet
                             pkt_index = 2;
                             pkt[0] = 0x20;
@@ -138,7 +142,7 @@ void ibus_task(void *arg) {
                                     xQueueOverwrite(send_mailbox, &msg);
 
                                 } else {
-                                printf("Checksum error: received 0x%04X, calculated 0x%04X\n", rx_cs, calc_cs);
+                                ESP_LOGW(TAG, "Checksum error: received 0x%04X, calculated 0x%04X", rx_cs, calc_cs);
                                 }
                             }
                             break;
@@ -150,15 +154,15 @@ void ibus_task(void *arg) {
                 break;
 
             case UART_BUFFER_FULL:
-                printf("UART buffer full\n");
+                ESP_LOGW(TAG, "UART buffer full");
                 uart_flush_input(UART_NUM);
                 break;
             case UART_FIFO_OVF:
-                printf("UART FIFO overflow\n");
+                ESP_LOGW(TAG, "UART FIFO overflow");
                 uart_flush_input(UART_NUM);
                 break;
             default:
-                printf("Unhandled UART event type: %d\n", event.type);
+                ESP_LOGE(TAG, "Unhandled UART event type: %d", event.type);
                 break;
             }
         }

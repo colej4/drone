@@ -11,6 +11,10 @@
 
 #include "driver/timer.h"
 
+//esp logging
+#include "esp_log.h"
+static const char* TAG = "main";
+
 
 #define TIMER_DIVIDER         80  //  Hardware timer clock divider
 
@@ -37,6 +41,8 @@ void init_timer()
 
 void app_main(void)
 {
+    //set log levels
+    esp_log_level_set("*", ESP_LOG_DEBUG);
 
     QueueHandle_t imu_data_queue = xQueueCreate(10, sizeof(timestamped_imu_data_t));
     QueueHandle_t state_estimate_mailbox = xQueueCreate(1, sizeof(Vector3));
@@ -50,12 +56,11 @@ void app_main(void)
     imu_i2c_init();
 
     while (imu_init() != 0) {
-        printf("IMU init FAILED\n");
+        ESP_LOGE(TAG, "IMU init FAILED");
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
-    printf("IMU initialized successfully\n");
-
+    ESP_LOGI(TAG, "IMU initialized successfully");
     init_timer();
 
     ibus_uart_init();

@@ -8,6 +8,10 @@
 #include "math_helpers.h"
 #include "state_estimator.h"
 
+//esp logging
+#include "esp_log.h"
+static const char* TAG = "state_estimator";
+
 void state_estimator_task(void *arg) {
 
     Vector3 orientation = {0.0f, 0.0f, 0.0f};
@@ -60,12 +64,8 @@ void state_estimator_task(void *arg) {
 
             xQueueOverwrite(state_estimate_mailbox, &orientation);
 
-            // if (timestamp - last_print_timestamp > 00000) {
-            //     //Print estimated orientation
-            //     printf("Estimated Orientation - Roll: %f, Pitch: %f, Yaw: %f @ %f seconds\n",
-            //         orientation.x, orientation.y, orientation.z, (float)timestamp / 1e6f);
-            //     printf("Accel Roll: %f, Accel Pitch: %f\n", accel_roll, accel_pitch);
-            // }
+            ESP_LOGV(TAG, "Roll: %f, Pitch: %f, Yaw: %f", orientation.x, orientation.y, orientation.z);
+
         }
     }
 }

@@ -14,14 +14,17 @@
 #include "math_helpers.h"
 #include "ibus_protocol.h"
 
-// ---------------- Motor GPIOs (MUST be output-capable) ----------------
-// GPIO 34/35 are input-only on ESP32: do not use them for motor outputs.
+//esp logging
+#include "esp_log.h"
+static const char* TAG = "control";
+
+// Motor GPIOs
 #define MOTOR0_PIN 25
 #define MOTOR1_PIN 26
 #define MOTOR2_PIN 27
 #define MOTOR3_PIN 14
 
-// ---------------- ESC / LEDC configuration ----------------
+// ESC / LEDC configuration
 #define ESC_HZ              250
 #define LEDC_MODE           LEDC_LOW_SPEED_MODE
 #define LEDC_TIMER          LEDC_TIMER_0
@@ -29,7 +32,7 @@
 
 #define ESC_MIN_US          1000
 #define ESC_MAX_US          2000
-// ---------------- Control configuration ----------------
+// Control configuration
 #define KP 0.08
 #define KI 0.0
 #define KD 0.04
@@ -40,8 +43,6 @@
 #define CONTROLLER_YAW_SENSITIVITY 0.01f
 
 
-// If your calculate_control_input_from_moments outputs "voltages" in [0..BATTERY_VOLTAGE],
-// map them to throttle fraction -> pulse width.
 static inline float clampf(float x, float lo, float hi)
 {
     return (x < lo) ? lo : (x > hi) ? hi : x;
@@ -49,7 +50,7 @@ static inline float clampf(float x, float lo, float hi)
 
 static inline uint32_t esc_us_to_duty(uint32_t pulse_us)
 {
-    const uint32_t period_us = 1000000UL / ESC_HZ;              // 20000 us @ 50 Hz
+    const uint32_t period_us = 1000000UL / ESC_HZ;
     const uint32_t max_duty  = (1UL << LEDC_TIMER_16_BIT) - 1;  // 65535
 
     if (pulse_us > period_us) pulse_us = period_us;
@@ -68,7 +69,6 @@ static void esc_ledc_init(void)
     };
     ESP_ERROR_CHECK(ledc_timer_config(&tcfg));
 
-    // Channels: one per motor
     const int gpios[4] = { MOTOR0_PIN, MOTOR1_PIN, MOTOR2_PIN, MOTOR3_PIN };
     const ledc_channel_t chs[4] = { LEDC_CHANNEL_0, LEDC_CHANNEL_1, LEDC_CHANNEL_2, LEDC_CHANNEL_3 };
 
@@ -85,7 +85,6 @@ static void esc_ledc_init(void)
         ESP_ERROR_CHECK(ledc_channel_config(&ccfg));
     }
 
-    // Initialize motors to minimum pulse (safe baseline)
     uint32_t duty_min = esc_us_to_duty(ESC_MIN_US);
     for (int i = 0; i < 4; i++) {
         ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, chs[i], duty_min));
@@ -105,10 +104,9 @@ static inline void esc_write_us_4(const uint32_t us[4])
 
 void control_task(void* arg)
 {
-    // Initialize ESC PWM once (before loop)
+    // Initialize ESC PWM
     esc_ledc_init();
 
-    // last_wake_time to ensure fixed frequency with vTaskDelayUntil
     TickType_t last_wake_time = xTaskGetTickCount();
 
     ControlConfig* config = (ControlConfig*)arg;
@@ -186,22 +184,29 @@ void control_task(void* arg)
 
         if (timestamp - last_print_timestamp > 500000) {
             last_print_timestamp = timestamp;
-            printf("Target Orientation - Roll: %f, Pitch: %f\n",
+            ESP_LOGD(TAG, "Target Orientation - Roll: %f, Pitch: %f",
                    ref_quat_headingless.x, ref_quat_headingless.y);
-            printf("Current Orientation - Roll: %f, Pitch: %f, Yaw: %f\n",
+            ESP_LOGD(TAG, "Current Orientation - Roll: %f, Pitch: %f, Yaw: %f",
                    orientation_euler.x, orientation_euler.y, orientation_euler.z);
-            printf("Euler Error - Roll: %f, Pitch: %f, Yaw: %f\n",
+            ESP_LOGD(TAG, "Euler Error - Roll: %f, Pitch: %f, Yaw: %f",
                    euler_error.x, euler_error.y, euler_error.z);
-            printf("Moments & Forces: %0.3f roll, %0.3f pitch, %0.3f yaw, %0.3f thrust\n",
+            ESP_LOGD(TAG, "Moments & Forces: %0.3f roll, %0.3f pitch, %0.3f yaw, %0.3f thrust",
                    roll_moment, pitch_moment, yaw_moment, local_z_force);
-            printf("us: %lu, %lu, %lu, %lu\n",
+            ESP_LOGD(TAG, "us: %lu, %lu, %lu, %lu",
                    motor_us[0], motor_us[1], motor_us[2], motor_us[3]);
-            printf("vra: %f\n", controller_input.vra);
         }
+
+        //verbose log for sd card logging? not sure if this will overwhelm at 250hz
+        ESP_LOGV(TAG, "TO (R, P): %f, %f | CO (R, P, Y): %f, %f, %f | EE (R, P, Y): %f, %f, %f | M & F: %0.3f roll, %0.3f pitch, %0.3f yaw, %0.3f thrust | us: %lu, %lu, %lu, %lu",
+               ref_quat_headingless.x, ref_quat_headingless.y,
+               orientation_euler.x, orientation_euler.y, orientation_euler.z,
+               euler_error.x, euler_error.y, euler_error.z,
+               roll_moment, pitch_moment, yaw_moment, local_z_force,
+               motor_us[0], motor_us[1], motor_us[2], motor_us[3]);
         
 
-        // 1 kHz loop (adjust to your desired controller rate)
-        xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1));
+        // 250 Hz loop
+        xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(4));
     }
 }
 
@@ -209,10 +214,9 @@ void control_task(void* arg)
 
 void esc_home_task(void* arg)
 {
-    // Initialize ESC PWM once (before loop)
+    // Initialize ESC PWM once
     esc_ledc_init();
 
-    // last_wake_time to ensure fixed frequency with vTaskDelayUntil
     TickType_t last_wake_time = xTaskGetTickCount();
 
     ControlConfig* config = (ControlConfig*)arg;
@@ -240,11 +244,9 @@ void esc_home_task(void* arg)
 
         if (timestamp - last_print_timestamp > 500000) {
             last_print_timestamp = timestamp;
-            printf("Waiting to home, please increase joystick input after powering ESCs\n");
+            ESP_LOGI(TAG, "Waiting to home, please increase joystick input after powering ESCs\n");
         }
 
-        // Map "voltage commands" -> throttle fraction -> ESC microseconds
-        // Assumes control_inputs[i] is in [0..BATTERY_VOLTAGE].
         uint32_t motor_us[4];
         if (has_homed) {
             motor_us[0] = ESC_MIN_US;
@@ -258,11 +260,10 @@ void esc_home_task(void* arg)
             motor_us[3] = ESC_MAX_US;
         }
 
-        // Write PWM pulses to ESCs
         esc_write_us_4(motor_us);
 
-        // 1 kHz loop (adjust to your desired controller rate)
-        xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1));
+        // 100 Hz loop
+        xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(10));
     }
 }
 

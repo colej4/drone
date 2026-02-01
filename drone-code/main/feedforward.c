@@ -4,6 +4,9 @@
 #include "feedforward.h"
 #include "ibus_protocol.h"
 
+//esp logging
+#include "esp_log.h"
+static const char* TAG = "feedforward";
 
 //constants for converting forces and moments to motor speed
 #define MOTOR_LEVER_ARM 0.15556 //0.22 / sqrt(2) meters for 440mm rod
@@ -76,6 +79,7 @@ static Vector3 joystick_inputs_to_forces(IbusMessage* message) {
 float joystick_input_to_global_thrust(IbusMessage* message) {
     float thrust = message->throttle * 2.0f * G;
     if (thrust > MAX_THRUST_NEWTONS) {
+        ESP_LOGW(TAG, "Thrust command clamped from %f to %f", thrust, MAX_THRUST_NEWTONS);
         thrust = MAX_THRUST_NEWTONS;
     }
     if (thrust < MIN_THRUST_NEWTONS) {
@@ -104,7 +108,7 @@ Vector3 euler_error_from_quats(Quaternion q_ref, Quaternion q_meas) {
     float theta = 2.0f * acosf(fmaxf(fminf(q_err.w, 1.0f), -1.0f));
     float sin_half_theta = sinf(theta / 2.0f);
     if (fabs(sin_half_theta) < 1e-6) {
-        // printf("singularity in euler error calculation\n");
+        ESP_LOGW(TAG, "singularity in euler error calculation, euler error set to zero");
         euler_error = (Vector3){0.0f, 0.0f, 0.0f};
     } else {
         euler_error.x = (q_err.x / sin_half_theta) * theta;

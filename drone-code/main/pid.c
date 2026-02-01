@@ -15,10 +15,14 @@
 
 #include "pid.h"
 
+//esp logging
+#include "esp_log.h"
+static const char* TAG = "pid";
+
 PIDController* new_pid(float kP, float kI, float kD, float integral_bound, float derivative_ema_gain, float initial_setpoint, uint64_t timestamp) {
     PIDController* controller = (PIDController*) malloc(sizeof(PIDController));
     if (controller == NULL) {
-        printf("Failed to allocate memory for PIDController\n");
+        ESP_LOGE(TAG, "Failed to allocate memory for PIDController");
         return NULL;
     }
     controller->kP = kP;
@@ -125,13 +129,13 @@ void vPID_controller(void *pvParameters) {
                 //send output to output queue
                 status = xQueueOverwrite(pid_config->output_mailbox, &output);
                 if (!status) {
-                    printf("Failed to send PID output to queue in PID %d", pid_config->unique_id);
+                    ESP_LOGE(TAG, "Failed to send PID output to queue in PID %d", pid_config->unique_id);
                 }
             } else {
-                printf("Invalid Message Type in PID %d: %d", pid_config->unique_id, received_message.type);
+                ESP_LOGE(TAG, "Invalid Message Type in PID %d: %d", pid_config->unique_id, received_message.type);
             }
         } else {
-            printf("Failed to read data from queue (block time expired) in PID %d", pid_config->unique_id);
+            ESP_LOGW(TAG, "Failed to read data from queue (block time expired) in PID %d", pid_config->unique_id);
         }
 
     }

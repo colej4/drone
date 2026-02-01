@@ -8,6 +8,10 @@
 #include "imu.h"
 #include "math_helpers.h"
 
+//esp logging
+#include "esp_log.h"
+static const char* TAG = "imu";
+
 #define I2C_MASTER_NUM         I2C_NUM_0
 #define I2C_MASTER_SDA_IO      21
 #define I2C_MASTER_SCL_IO      22
@@ -75,7 +79,7 @@ void imu_i2c_init(void)
         0
     ));
 
-    printf("I2C bus initialized on SDA=%d SCL=%d\n", I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO);
+    ESP_LOGI(TAG, "I2C bus initialized on SDA=%d SCL=%d", I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO);
 }
 
 int imu_init(void)
@@ -112,7 +116,7 @@ int imu_read_raw(imu_raw_data_t *out)
     uint8_t buf[14] = {0};
     esp_err_t err = i2c_read_regs(MPU6050_ADDR, 0x3B, buf, sizeof(buf));
     if (err != ESP_OK) {
-        printf("imu_read_raw failed: %s\n", esp_err_to_name(err));
+        ESP_LOGE(TAG, "imu_read_raw failed: %s", esp_err_to_name(err));
         return -1;
     }
 
@@ -174,7 +178,7 @@ void calibrate_imu() {
     imu_data_t data;
     float ax_sum = 0.0f, ay_sum = 0.0f, az_sum = 0.0f, 
           gx_sum = 0.0f, gy_sum = 0.0f, gz_sum = 0.0f;
-    printf("Calibrating IMU\n");
+    ESP_LOGI(TAG, "Calibrating IMU");
 
     for (int i = 0; i < num_samples; i++) {
         if (imu_read(&data) == 0) {
@@ -229,11 +233,17 @@ void calibrate_imu() {
         imu_to_drone_quat.z = cz * s;
     }
 
-    printf("Quaternion to rotate IMU to drone frame: w=%f x=%f y=%f z=%f\n",
+    ESP_LOGD(TAG, "Quaternion to rotate IMU to drone frame: w=%f x=%f y=%f z=%f",
            imu_to_drone_quat.w,
            imu_to_drone_quat.x,
            imu_to_drone_quat.y,
            imu_to_drone_quat.z);
+    ESP_LOGD(TAG, "Gyro biases: gx=%f gy=%f gz=%f",
+           gyro_bias_x,
+           gyro_bias_y,
+           gyro_bias_z);
+    ESP_LOGD(TAG, "Accel scale bias: %f", accel_scale_bias);
+    ESP_LOGI(TAG, "IMU calibration complete.");
 }
 
 
@@ -287,14 +297,13 @@ void imu_task(void *arg)
             timestamped_imu_data_t ts_data;
             ts_data.data = data;
             timer_get_counter_value(TIMER_GROUP_0, TIMER_0, &ts_data.timestamp);
-            // printf("Calibrated: %4f, %4f, %4f, %4f, %4f, %4f",
             // data.ax, data.ay, data.az, data.gx, data.gy, data.gz);
             BaseType_t result = xQueueSendToBack(send_queue, &ts_data, 0);
             if (result != pdTRUE) {
-                printf("IMU task: queue full\n");
+                ESP_LOGW(TAG, "IMU task: queue full");
             }
         } else {
-            printf("IMU read error\n");
+            ESP_LOGE(TAG, "IMU read error");
         }
 
         vTaskDelay(pdMS_TO_TICKS(1));   // 1000 Hz
