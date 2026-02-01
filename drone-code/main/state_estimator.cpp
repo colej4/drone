@@ -4,9 +4,9 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#include "imu.h"
-#include "math_helpers.h"
-#include "state_estimator.h"
+#include "imu.hpp"
+#include "math_helpers.hpp"
+#include "state_estimator.hpp"
 
 //esp logging
 #include "esp_log.h"

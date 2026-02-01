@@ -5,8 +5,8 @@
 #include "driver/i2c.h"
 #include "driver/timer.h"
 
-#include "imu.h"
-#include "math_helpers.h"
+#include "imu.hpp"
+#include "math_helpers.hpp"
 
 //esp logging
 #include "esp_log.h"
@@ -60,15 +60,14 @@ static esp_err_t i2c_read_regs(uint8_t dev_addr, uint8_t reg, uint8_t *data, siz
 
 void imu_i2c_init(void)
 {
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA_IO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_io_num = I2C_MASTER_SCL_IO,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
-        .clk_flags = 0,
-    };
+    i2c_config_t conf = {};
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = I2C_MASTER_SDA_IO;
+    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.scl_io_num = I2C_MASTER_SCL_IO;
+    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
+    conf.clk_flags = 0;
 
     ESP_ERROR_CHECK(i2c_param_config(I2C_MASTER_NUM, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(

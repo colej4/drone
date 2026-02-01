@@ -7,7 +7,7 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-#include "ibus_protocol.h"
+#include "ibus_protocol.hpp"
 
 //esp logging
 #include "esp_log.h"
@@ -44,13 +44,12 @@ uint16_t calculate_checksum(const uint8_t *data, uint16_t length) {
 }
 
 void ibus_uart_init(void) {
-    uart_config_t uart_config = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
+    uart_config_t uart_config = {};
+    uart_config.baud_rate = 115200;
+    uart_config.data_bits = UART_DATA_8_BITS;
+    uart_config.parity    = UART_PARITY_DISABLE;
+    uart_config.stop_bits = UART_STOP_BITS_1;
+    uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
     ESP_ERROR_CHECK(uart_param_config(UART_NUM, &uart_config));
     ESP_ERROR_CHECK(uart_set_pin(UART_NUM, UART_TX_PIN, UART_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     // Install driver with RX buffer
@@ -78,7 +77,7 @@ void ibus_task(void *arg) {
         if (xQueueReceive(uart_queue, &event, portMAX_DELAY)) {
             switch (event.type) {
 
-            case UART_DATA:
+            case UART_DATA:{
                 // Read the incoming bytes into 'data'
                 int len = uart_read_bytes(UART_NUM, data, event.size, 0);
                 if (len != 32) {
@@ -130,14 +129,13 @@ void ibus_task(void *arg) {
                                     float vra = ((float)channels[4] - 1000.0f) / 1000.0f;
                                     float vrb = ((float)channels[5] - 1000.0f) / 1000.0f;
 
-                                    IbusMessage msg = {
-                                        .throttle = throttle,
-                                        .yaw = yaw,
-                                        .pitch = pitch,
-                                        .roll = roll,
-                                        .vra = vra,
-                                        .vrb = vrb
-                                    };
+                                    IbusMessage msg = {};
+                                    msg.throttle = throttle;
+                                    msg.yaw = yaw;
+                                    msg.pitch = pitch;
+                                    msg.roll = roll;
+                                    msg.vra = vra;
+                                    msg.vrb = vrb;
 
                                     xQueueOverwrite(send_mailbox, &msg);
 
@@ -152,18 +150,21 @@ void ibus_task(void *arg) {
                     prev = data[i];
                 }
                 break;
-
-            case UART_BUFFER_FULL:
+            }
+            case UART_BUFFER_FULL: {
                 ESP_LOGW(TAG, "UART buffer full");
                 uart_flush_input(UART_NUM);
                 break;
-            case UART_FIFO_OVF:
+            }
+            case UART_FIFO_OVF: {
                 ESP_LOGW(TAG, "UART FIFO overflow");
                 uart_flush_input(UART_NUM);
                 break;
-            default:
+            }
+            default: {
                 ESP_LOGE(TAG, "Unhandled UART event type: %d", event.type);
                 break;
+            }
             }
         }
     }

@@ -1,8 +1,8 @@
 #include <stdint.h> 
 #include <stdio.h>
 
-#include "feedforward.h"
-#include "ibus_protocol.h"
+#include "feedforward.hpp"
+#include "ibus_protocol.hpp"
 
 //esp logging
 #include "esp_log.h"

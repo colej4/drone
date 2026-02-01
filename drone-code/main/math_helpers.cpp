@@ -1,4 +1,4 @@
-#include "math_helpers.h"
+#include "math_helpers.hpp"
 
 Quaternion quatmultiply(Quaternion q1, Quaternion q2) {
     Quaternion result;
