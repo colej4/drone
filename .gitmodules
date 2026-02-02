@@ -1,0 +1,3 @@
+[submodule "drone-code/components/eigen/eigen"]
+	path = drone-code/components/eigen/eigen
+	url = https://gitlab.com/libeigen/eigen.git
