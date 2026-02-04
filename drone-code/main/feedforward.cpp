@@ -58,6 +58,7 @@ Quaternion ref_quat_from_global_forces(Vector3 global_force_vec, float heading) 
 
 //finds the reciprocal of the z component of a unit vector in the direction of a quat (essentially ratio between global f_z and local f_z)
 float thrust_multiplier_from_quat(Quaternion quat) {
+    
     float x = quat.x;
     float y = quat.y;
 
