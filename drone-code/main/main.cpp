@@ -47,7 +47,11 @@ void init_timer()
 extern "C" void app_main(void)
 {
     //set log levels
-    esp_log_level_set("*", ESP_LOG_VERBOSE);
+    esp_log_level_set("*", ESP_LOG_INFO);
+    //prevent spam in logs from sd card operation
+    esp_log_level_set("control", ESP_LOG_VERBOSE);
+    esp_log_level_set("state_estimator", ESP_LOG_VERBOSE);
+
 
 
 
@@ -61,7 +65,7 @@ extern "C" void app_main(void)
     log_stream_init_udp("192.168.0.113", 9000);
     #endif
     #if SD_LOGGING
-    mount_sd();
+    ESP_ERROR_CHECK(mount_sd_and_start_logging());
     #endif
 
     
