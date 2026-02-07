@@ -13,6 +13,7 @@ typedef struct {
     float roll;
     float vra;
     float vrb;
+    uint64_t timestamp;
 } IbusMessage;
 
 #endif
