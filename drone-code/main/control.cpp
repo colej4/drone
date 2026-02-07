@@ -170,6 +170,10 @@ void control_task(void* arg)
         if (controller_input.vra > 0.5f) {
             emergency_stop = true;
         }
+        if (timestamp - controller_input.timestamp > 200000) {
+            //200 ms timeout for estop from no controller input
+            emergency_stop = true;
+        }
         if (emergency_stop) {
             motor_us[0] = 0;
             motor_us[1] = 0;
