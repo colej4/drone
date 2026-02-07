@@ -97,6 +97,35 @@ float calculate_pid_with_err(PIDController* controller, float error, uint64_t ti
     }
 }
 
+float calculate_pid_with_err_and_derivative(PIDController* controller, float error, float derivative, uint64_t timestamp) {
+    float elapsed_time = (float)(timestamp - controller->previous_timestamp) / 1e6f; //it is assumed timestamp is in micros
+    if (elapsed_time > 1e-6f) {
+        //compute proportional term
+        float proportional_term = controller->kP * error;
+        //compute integral term
+        controller->integral += error * elapsed_time;
+        //constrain integral term so |integral| < bound
+        if (controller->integral > controller->integral_bound) {
+            controller->integral = controller->integral_bound;
+        }
+        if (controller->integral < -1.0f * controller->integral_bound) {
+            controller->integral = -1.0f * controller->integral_bound;
+        }
+        float integral_term = controller->kI * controller->integral;
+        //compute derivative term
+        float raw_derivative = derivative;
+        controller->filtered_derivative = controller->derivative_ema_gain * raw_derivative + (1.0 - controller->derivative_ema_gain) * controller->filtered_derivative;
+        float derivative_term = controller->kD * controller->filtered_derivative;
+        //update timestamp and error
+        controller->previous_error = error;
+        controller->previous_timestamp = timestamp;
+
+        return proportional_term + integral_term + derivative_term;
+    } else {
+        return controller->kP * error + controller->kI * controller->integral;
+    }
+}
+
 
 void vPID_controller(void *pvParameters) {
     //Read parameters and set initial values

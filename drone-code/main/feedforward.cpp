@@ -23,14 +23,21 @@ static const char* TAG = "feedforward";
 
 
 //for controller
-#define CONTROLLER_SENS 4.0 //force (in newtons) applied at max joystick input
+#define CONTROLLER_SENS 0.1 //max command (as fraction of upwards thrust)
 
 Quaternion ref_quat_from_global_forces(Vector3 global_force_vec, float heading) {
+    float force_norm = sqrtf(global_force_vec.x * global_force_vec.x +
+                             global_force_vec.y * global_force_vec.y +
+                             global_force_vec.z * global_force_vec.z);
+    if (force_norm < 1e-3f) {
+        return (Quaternion){1.0f, 0.0f, 0.0f, 0.0f};
+    }
+
     Vector3 z_axis = (Vector3){0.0f, 0.0f, 1.0f};
     Vector3 force_dir = normalize(global_force_vec);
     Quaternion yawless_quat;
 
-    if(fabs(1.0 - dot(force_dir, z_axis)) < 1e-6) {
+    if(fabs(1.0 - dot(force_dir, z_axis)) < 1e-4) {
         //force is aligned with z axis, return quat from heading only
         yawless_quat = (Quaternion){1.0f, 0.0f, 0.0f, 0.0f};
     } else {
@@ -71,8 +78,8 @@ float thrust_multiplier_from_quat(Quaternion quat) {
 
 static Vector3 joystick_inputs_to_forces(IbusMessage* message) {
     float force_z = message->throttle * 2.0f * G;
-    float force_x = -CONTROLLER_SENS * message->roll;
-    float force_y = -CONTROLLER_SENS * message->pitch;
+    float force_x = -CONTROLLER_SENS * message->roll * force_z;
+    float force_y = -CONTROLLER_SENS * message->pitch * force_z;
     return (Vector3){force_x, force_y, force_z};
 }
 
@@ -95,26 +102,13 @@ Quaternion joystick_inputs_to_ref_quat_headingless(IbusMessage* message) {
 }
 
 Vector3 euler_error_from_quats(Quaternion q_ref, Quaternion q_meas) {
-    Quaternion q_meas_conj = (Quaternion){
-        q_meas.w,
-        -q_meas.x,
-        -q_meas.y,
-        -q_meas.z
-    };
-
-    Quaternion q_err = quatmultiply(q_ref, q_meas_conj);
+    Vector3 ref_euler = quat_to_euler(q_ref);
+    Vector3 meas_euler = quat_to_euler(q_meas);
 
     Vector3 euler_error;
-    float theta = 2.0f * acosf(fmaxf(fminf(q_err.w, 1.0f), -1.0f));
-    float sin_half_theta = sinf(theta / 2.0f);
-    if (fabs(sin_half_theta) < 1e-6) {
-        ESP_LOGW(TAG, "singularity in euler error calculation, euler error set to zero");
-        euler_error = (Vector3){0.0f, 0.0f, 0.0f};
-    } else {
-        euler_error.x = (q_err.x / sin_half_theta) * theta;
-        euler_error.y = (q_err.y / sin_half_theta) * theta;
-        euler_error.z = (q_err.z / sin_half_theta) * theta;
-    }
+    euler_error.x = wrap_angle_pi(ref_euler.x - meas_euler.x);
+    euler_error.y = wrap_angle_pi(ref_euler.y - meas_euler.y);
+    euler_error.z = wrap_angle_pi(ref_euler.z - meas_euler.z);
     return euler_error;
 }
 

@@ -15,6 +15,7 @@ static const char* TAG = "state_estimator";
 void state_estimator_task(void *arg) {
 
     Vector3 orientation = {0.0f, 0.0f, 0.0f};
+    Vector3 euler_rates = {0.0f, 0.0f, 0.0f};
 
     StateEstimatorConfig* config = (StateEstimatorConfig*)arg;
     QueueHandle_t imu_data_queue = config->imu_data_queue;
@@ -41,7 +42,10 @@ void state_estimator_task(void *arg) {
             orientation.y += imu_data.gy * dt;
             orientation.z += imu_data.gz * dt;
 
-            
+            euler_rates.x = imu_data.gx;
+            euler_rates.y = imu_data.gy;
+            euler_rates.z = imu_data.gz;
+
             // Complementary filter with accelerometer
             accel_roll = 0.95 * accel_roll + 0.05 * atan2f(imu_data.ay, imu_data.az);
             accel_pitch = 0.95 * accel_pitch + 0.05 * atan2f(-imu_data.ax, sqrtf(imu_data.ay * imu_data.ay + imu_data.az * imu_data.az));
@@ -60,11 +64,18 @@ void state_estimator_task(void *arg) {
                 orientation.y = 0.9997 * orientation.y + 0.0003 * accel_pitch;
             }
 
+            StateEstimate state_estimate;
+            state_estimate.orientation = orientation;
+            state_estimate.euler_rates = euler_rates;
+
             last_timestamp = timestamp;
 
             xQueueOverwrite(state_estimate_mailbox, &orientation);
 
-            ESP_LOGV(TAG, "Roll: %f, Pitch: %f, Yaw: %f", orientation.x, orientation.y, orientation.z);
+            // ESP_LOGV(TAG, "Roll: %f, Pitch: %f, Yaw: %f", orientation.x, orientation.y, orientation.z);
+            // ESP_LOGV(TAG, "Orientation - Roll: %f, Pitch: %f, Yaw: %f | Euler Rates - gx: %f, gy: %f, gz: %f",
+            //          orientation.x, orientation.y, orientation.z,
+            //          euler_rates.x, euler_rates.y, euler_rates.z);
 
         }
     }

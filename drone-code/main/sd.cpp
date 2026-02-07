@@ -26,7 +26,7 @@ static const char *TAG = "sd";
 #define MOSI 5
 #define MISO 17
 
-#define LOG_LINE_MAX   256
+#define LOG_LINE_MAX   512
 #define LOG_QUEUE_LEN  128
 
 typedef struct {

@@ -25,5 +25,7 @@ Vector3 normalize(Vector3 v);
 float dot(Vector3 v1, Vector3 v2);
 Vector3 cross(Vector3 v1, Vector3 v2);
 int signum(int x);
+Vector3 quat_to_euler(Quaternion q);
+float wrap_angle_pi(float angle);
 
 #endif

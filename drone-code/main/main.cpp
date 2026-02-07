@@ -71,7 +71,7 @@ extern "C" void app_main(void)
     
 
     QueueHandle_t imu_data_queue = xQueueCreate(10, sizeof(timestamped_imu_data_t));
-    QueueHandle_t state_estimate_mailbox = xQueueCreate(1, sizeof(Vector3));
+    QueueHandle_t state_estimate_mailbox = xQueueCreate(1, sizeof(StateEstimate));
     QueueHandle_t ibus_mailbox = xQueueCreate(1, sizeof(IbusMessage));
 
     StateEstimatorConfig state_estimator_config = {};
