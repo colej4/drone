@@ -129,11 +129,11 @@ void control_task(void* arg)
 
     while (1) {
         // Get input from RC transmitter
-        IbusMessage controller_input;
+        IbusMessage controller_input = {};
         (void)xQueuePeek(ibus_mailbox, &controller_input, 0);
 
         // Get current state estimate
-        Vector3 orientation_euler;
+        Vector3 orientation_euler = {};
         (void)xQueuePeek(state_estimate_mailbox, &orientation_euler, 0);
 
         // Convert RC transmitter input to reference orientation
@@ -233,7 +233,7 @@ void esc_home_task(void* arg)
 
     while (1) {
         // Get input from RC transmitter
-        IbusMessage controller_input;
+        IbusMessage controller_input = {};
         (void)xQueuePeek(ibus_mailbox, &controller_input, 0);
 
         if (controller_input.throttle > 0.5f) {
