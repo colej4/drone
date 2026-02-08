@@ -144,11 +144,11 @@ void control_task(void* arg)
 
     while (1) {
         // Get input from RC transmitter
-        IbusMessage controller_input;
+        IbusMessage controller_input = {};
         (void)xQueuePeek(ibus_mailbox, &controller_input, 0);
 
         // Get current state estimate
-        StateEstimate state_estimate;
+        StateEstimate state_estimate = {};
         (void)xQueuePeek(state_estimate_mailbox, &state_estimate, 0);
         Vector3 orientation_euler = state_estimate.orientation;
         Vector3 euler_rates = state_estimate.euler_rates;
@@ -277,7 +277,7 @@ void esc_home_task(void* arg)
 
     while (1) {
         // Get input from RC transmitter
-        IbusMessage controller_input;
+        IbusMessage controller_input = {};
         (void)xQueuePeek(ibus_mailbox, &controller_input, 0);
 
         if (controller_input.throttle > 0.5f) {
