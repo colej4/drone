@@ -34,7 +34,7 @@ static const char* TAG = "control";
 #define ESC_MIN_US          1000
 #define ESC_MAX_US          2000
 // Control configuration
-#define KP_VEL 0.1
+#define KP_VEL 0.8
 #define KI_VEL 0.0
 #define KD_VEL 0.0
 #define INTEGRAL_BOUND 0.0
@@ -130,6 +130,10 @@ void control_task(void* arg)
             initial_timestamp
         );
     }
+    pid_controllers[2]->kP = KP_VEL * 0.1f; // reduce P gain for yaw
+    pid_controllers[2]->kI = KI_VEL * 0.1f; // reduce I gain for yaw
+    pid_controllers[2]->kD = KD_VEL * 0.1f; // reduce D gain for yaw
+
 
     PIDController* pos_pid_controllers[2]; // roll, pitch position to rate
     for (int i = 0; i < 2; i++) {
@@ -141,6 +145,7 @@ void control_task(void* arg)
             initial_timestamp
         );
     }
+
 
     while (1) {
         // Get input from RC transmitter
@@ -212,8 +217,12 @@ void control_task(void* arg)
         if (controller_input.vra > 0.5f) {
             emergency_stop = true;
         }
-        if (timestamp - controller_input.timestamp > 200000) {
-            //200 ms timeout for estop from no controller input
+        if (timestamp - state_estimate.timestamp > 20000) {
+            //20 ms timeout for estop from stale state estimate
+            emergency_stop = true;
+        }
+        if (timestamp - controller_input.timestamp > 100000) {
+            //100 ms timeout for estop from no controller input
             emergency_stop = true;
         }
         if (emergency_stop) {

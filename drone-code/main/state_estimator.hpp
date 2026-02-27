@@ -16,6 +16,7 @@ typedef struct {
 typedef struct {
     Vector3 orientation; // roll, pitch, yaw in radians
     Vector3 euler_rates; // angular rates in rad/s
+    uint64_t timestamp; // in microseconds
 } StateEstimate;
 
 #endif

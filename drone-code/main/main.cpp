@@ -42,6 +42,20 @@ void init_timer()
 
 
     timer_start(TIMER_GROUP_0, TIMER_0);
+
+    timer_config_t imu_timer_config = {};
+    imu_timer_config.divider = TIMER_DIVIDER;
+    imu_timer_config.counter_dir = TIMER_COUNT_UP;
+    imu_timer_config.counter_en = TIMER_PAUSE;
+    imu_timer_config.auto_reload = TIMER_AUTORELOAD_EN;
+    imu_timer_config.alarm_en = TIMER_ALARM_EN;
+    imu_timer_config.intr_type = TIMER_INTR_LEVEL;
+
+    timer_init(TIMER_GROUP_0, TIMER_1, &imu_timer_config);
+    timer_set_alarm_value(TIMER_GROUP_0, TIMER_1, 1000); // 1 ms
+    timer_set_counter_value(TIMER_GROUP_0, TIMER_1, 0);
+
+
 }
 
 extern "C" void app_main(void)
@@ -91,7 +105,13 @@ extern "C" void app_main(void)
     ibus_uart_init();
 
     xTaskCreate(ibus_task, "ibus_task", 4096, (void*)&ibus_mailbox, 5, NULL);
-    xTaskCreate(imu_task, "imu_task", 4096, (void*)&imu_data_queue, 5, NULL);
+
+    TaskHandle_t imu_task_handle;
+    xTaskCreate(imu_task, "imu_task", 4096, (void*)&imu_data_queue, 6, &imu_task_handle);
+    timer_isr_callback_add(TIMER_GROUP_0, TIMER_1, imu_timer_isr_cb, (void*)imu_task_handle, ESP_INTR_FLAG_IRAM);
+
+    timer_start(TIMER_GROUP_0, TIMER_1);
+
     xTaskCreate(state_estimator_task, "state_estimator_task", 4096, (void*)&state_estimator_config, 5, NULL);
     ControlConfig controlconfig = {};
     controlconfig.ibus_mailbox = ibus_mailbox;
