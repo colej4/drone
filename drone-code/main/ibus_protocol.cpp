@@ -1,4 +1,6 @@
 #include <stdint.h> 
+#include <cmath>
+
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -6,6 +8,7 @@
 
 #include "driver/uart.h"
 #include "driver/gpio.h"
+#include "driver/timer.h"
 
 #include "ibus_protocol.hpp"
 
@@ -112,9 +115,7 @@ void ibus_task(void *arg) {
                                 uint16_t calc_cs = calculate_checksum(pkt, 30);
 
                                 if (rx_cs == calc_cs) {
-                                    TickType_t now = xTaskGetTickCount();
-                                    
-
+                                
                                     uint16_t channels[6];
                                     for (int ch = 0; ch < 6; ch++) {
                                         uint16_t val =
@@ -136,6 +137,20 @@ void ibus_task(void *arg) {
                                     msg.roll = roll;
                                     msg.vra = vra;
                                     msg.vrb = vrb;
+
+                                    uint64_t timestamp;
+                                    timer_get_counter_value(TIMER_GROUP_0, TIMER_0, &timestamp);
+                                    msg.timestamp = timestamp;
+
+                                    if (throttle < 0.02f) {
+                                        msg.throttle = 0.0f; // deadzone
+                                    }
+                                    if (fabsf(roll) < 0.025f) {
+                                        msg.roll = 0.0f; // deadzone
+                                    }
+                                    if (fabsf(pitch) < 0.025f) {
+                                        msg.pitch = 0.0f; // deadzone
+                                    }
 
                                     xQueueOverwrite(send_mailbox, &msg);
 

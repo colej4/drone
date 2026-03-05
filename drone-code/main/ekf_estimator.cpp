@@ -67,9 +67,9 @@ ControlInput accelerometer_measurement_from_state(State state) {
     float q2 = state(2);
     float q3 = state(3);
 
-    accel_meas(0) = 2.0f * (q1 * q3 - q0 * q2) * G;
-    accel_meas(1) = 2.0f * (q0 * q1 + q2 * q3) * G;
-    accel_meas(2) = (q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3) * G;
+    accel_meas(0) = 2.0f * (q1 * q3 - q0 * q2) * GRAVITATIONAL_ACCELERATION;
+    accel_meas(1) = 2.0f * (q0 * q1 + q2 * q3) * GRAVITATIONAL_ACCELERATION;
+    accel_meas(2) = (q0 * q0 - q1 * q1 - q2 * q2 + q3 * q3) * GRAVITATIONAL_ACCELERATION;
 
     return accel_meas;
 }
@@ -84,20 +84,20 @@ Eigen::Matrix<float, 3, 7> accelerometer_jacobian_from_state(State state) {
     float q3 = state(3);
 
     //partial derivatives of accel measurement w.r.t. state
-    H(0, 0) = -2.0f * q2 * G;
-    H(0, 1) = 2.0f * q3 * G;
-    H(0, 2) = -2.0f * q0 * G;
-    H(0, 3) = 2.0f * q1 * G;
+    H(0, 0) = -2.0f * q2 * GRAVITATIONAL_ACCELERATION;
+    H(0, 1) = 2.0f * q3 * GRAVITATIONAL_ACCELERATION;
+    H(0, 2) = -2.0f * q0 * GRAVITATIONAL_ACCELERATION;
+    H(0, 3) = 2.0f * q1 * GRAVITATIONAL_ACCELERATION;
 
-    H(1, 0) = 2.0f * q1 * G;
-    H(1, 1) = 2.0f * q0 * G;
-    H(1, 2) = 2.0f * q3 * G;
-    H(1, 3) = 2.0f * q2 * G;
+    H(1, 0) = 2.0f * q1 * GRAVITATIONAL_ACCELERATION;
+    H(1, 1) = 2.0f * q0 * GRAVITATIONAL_ACCELERATION;
+    H(1, 2) = 2.0f * q3 * GRAVITATIONAL_ACCELERATION;
+    H(1, 3) = 2.0f * q2 * GRAVITATIONAL_ACCELERATION;
 
-    H(2, 0) = 2.0f * q0 * G;
-    H(2, 1) = -2.0f * q1 * G;
-    H(2, 2) = -2.0f * q2 * G;
-    H(2, 3) = 2.0f * q3 * G;
+    H(2, 0) = 2.0f * q0 * GRAVITATIONAL_ACCELERATION;
+    H(2, 1) = -2.0f * q1 * GRAVITATIONAL_ACCELERATION;
+    H(2, 2) = -2.0f * q2 * GRAVITATIONAL_ACCELERATION;
+    H(2, 3) = 2.0f * q3 * GRAVITATIONAL_ACCELERATION;
 
     return H;
 }

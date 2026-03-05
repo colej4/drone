@@ -67,3 +67,40 @@ int signum(int x) {
         return 0;
     }
 }
+
+Vector3 quat_to_euler(Quaternion q) {
+    const float pi = 3.14159265f;
+    float norm = sqrtf(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+    if (norm > 1e-6f) {
+        q.w /= norm;
+        q.x /= norm;
+        q.y /= norm;
+        q.z /= norm;
+    }
+
+    float sinr_cosp = 2.0f * (q.w * q.x + q.y * q.z);
+    float cosr_cosp = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
+    float roll = atan2f(sinr_cosp, cosr_cosp);
+
+    float sinp = 2.0f * (q.w * q.y - q.z * q.x);
+    if (sinp > 1.0f) sinp = 1.0f;
+    if (sinp < -1.0f) sinp = -1.0f;
+    float pitch = asinf(sinp);
+
+    float siny_cosp = 2.0f * (q.w * q.z + q.x * q.y);
+    float cosy_cosp = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
+    float yaw = atan2f(siny_cosp, cosy_cosp);
+
+    (void)pi;
+    return (Vector3){roll, pitch, yaw};
+}
+
+float wrap_angle_pi(float angle) {
+    const float pi = 3.14159265f;
+    const float two_pi = 2.0f * pi;
+    angle = fmodf(angle + pi, two_pi);
+    if (angle < 0.0f) {
+        angle += two_pi;
+    }
+    return angle - pi;
+}

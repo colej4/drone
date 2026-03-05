@@ -27,6 +27,7 @@ int  imu_init(void);
 int  imu_read_raw(imu_raw_data_t *out);
 imu_data_t imu_unit_convert(imu_raw_data_t *raw);
 int  imu_read(imu_data_t *out);
+bool IRAM_ATTR imu_timer_isr_cb(void *args);
 void imu_task(void *arg);
 
 #endif

@@ -39,4 +39,6 @@ float calculate_pid(PIDController* controller, float measurement, uint64_t times
 
 float calculate_pid_with_err(PIDController* controller, float error, uint64_t timestamp);
 
+float calculate_pid_with_err_and_derivative(PIDController* controller, float error, float derivative, uint64_t timestamp);
+
 void vPID_controller(void *pvParameters);

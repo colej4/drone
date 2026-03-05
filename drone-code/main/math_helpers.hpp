@@ -5,7 +5,7 @@
 #include <functional>
 #include <utility>
 
-#define G 9.81
+#define GRAVITATIONAL_ACCELERATION 9.81
 
 typedef struct {
     float w;
@@ -48,5 +48,8 @@ std::function<State(const State&, const ControlInput&)> euler_step(Func&& f, flo
         return x + dt * rate_of_change;
     };
 }
+
+Vector3 quat_to_euler(Quaternion q);
+float wrap_angle_pi(float angle);
 
 #endif
