@@ -15,7 +15,7 @@ static const char* TAG = "imu";
 #define I2C_MASTER_NUM         I2C_NUM_0
 #define I2C_MASTER_SDA_IO      21
 #define I2C_MASTER_SCL_IO      22
-#define I2C_MASTER_FREQ_HZ     100000
+#define I2C_MASTER_FREQ_HZ     400000
 #define I2C_MASTER_TX_BUF_DISABLE 0
 #define I2C_MASTER_RX_BUF_DISABLE 0
 #define I2C_MASTER_TIMEOUT_MS  100
@@ -134,7 +134,7 @@ imu_data_t imu_unit_convert(imu_raw_data_t *raw)
 {
     imu_data_t data;
 
-    const float accel_scale = G / 8192.0f; // m/s² per LSB
+    const float accel_scale = GRAVITATIONAL_ACCELERATION / 8192.0f; // m/s² per LSB
     data.ax = raw->ax * accel_scale;
     data.ay = raw->ay * accel_scale;
     data.az = raw->az * accel_scale;
@@ -202,7 +202,7 @@ void calibrate_imu() {
 
     float mag = sqrtf(ax*ax + ay*ay + az*az);
     float gx = ax/mag, gy = ay/mag, gz = az/mag;
-    accel_scale_bias = mag / G;
+    accel_scale_bias = mag / GRAVITATIONAL_ACCELERATION;
     const float ux=0, uy=0, uz=1; //unit vec up
 
     // Cross and dot
@@ -280,6 +280,17 @@ int imu_read_calibrated(imu_data_t *out)
     return 0;
 }
 
+bool IRAM_ATTR imu_timer_isr_cb(void *args)
+{
+    TaskHandle_t imu_task = (TaskHandle_t)args;
+
+    BaseType_t hp_task_woken = pdFALSE;
+    vTaskNotifyGiveFromISR(imu_task, &hp_task_woken);
+
+    return hp_task_woken == pdTRUE;
+}
+
+
 
 
 void imu_task(void *arg)
@@ -292,11 +303,12 @@ void imu_task(void *arg)
     calibrate_imu();
 
     while (1) {
+        //task is woken by isr timer callback every 1 ms
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         if (imu_read_calibrated(&data) == 0) {
             timestamped_imu_data_t ts_data;
             ts_data.data = data;
             timer_get_counter_value(TIMER_GROUP_0, TIMER_0, &ts_data.timestamp);
-            // data.ax, data.ay, data.az, data.gx, data.gy, data.gz);
             BaseType_t result = xQueueSendToBack(send_queue, &ts_data, 0);
             if (result != pdTRUE) {
                 ESP_LOGW(TAG, "IMU task: queue full");
@@ -304,7 +316,5 @@ void imu_task(void *arg)
         } else {
             ESP_LOGE(TAG, "IMU read error");
         }
-
-        vTaskDelay(pdMS_TO_TICKS(1));   // 1000 Hz
     }
 }

@@ -1,4 +1,6 @@
 #include <stdint.h> 
+#include <cmath>
+
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -139,6 +141,16 @@ void ibus_task(void *arg) {
                                     uint64_t timestamp;
                                     timer_get_counter_value(TIMER_GROUP_0, TIMER_0, &timestamp);
                                     msg.timestamp = timestamp;
+
+                                    if (throttle < 0.02f) {
+                                        msg.throttle = 0.0f; // deadzone
+                                    }
+                                    if (fabsf(roll) < 0.025f) {
+                                        msg.roll = 0.0f; // deadzone
+                                    }
+                                    if (fabsf(pitch) < 0.025f) {
+                                        msg.pitch = 0.0f; // deadzone
+                                    }
 
                                     xQueueOverwrite(send_mailbox, &msg);
 
