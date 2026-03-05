@@ -34,21 +34,21 @@ static const char* TAG = "control";
 #define ESC_MIN_US          1000
 #define ESC_MAX_US          2000
 // Control configuration
-#define KP_VEL 0.1
-#define KI_VEL 0.0
-#define KD_VEL 0.0005
-#define INTEGRAL_BOUND 0.0
+#define KP_VEL 0.2
+#define KI_VEL 0.08
+#define KD_VEL 0.005
+#define INTEGRAL_BOUND 0.15
 #define DERIVATIVE_EMA_GAIN 1.0
 
-#define KP_VEL_YAW 0.01
+#define KP_VEL_YAW 0.1
 #define KI_VEL_YAW 0.0
 #define KD_VEL_YAW 0.0
 
 #define BATTERY_VOLTAGE 11.1f
 #define CONTROLLER_YAW_SENSITIVITY 0.5f
 
-#define KP_POS 10.0f // P controller to convert from angle to angular rate
-#define KD_POS 0.15f
+#define KP_POS 18.0f // P controller to convert from angle to angular rate
+#define KD_POS 0.0f
 
 static bool full_estop = false;
 
@@ -152,7 +152,6 @@ void control_task(void* arg)
         );
     }
 
-    float estimated_motor_speeds[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 
     while (1) {
@@ -239,10 +238,10 @@ void control_task(void* arg)
             full_estop = true;
         }
         if (emergency_stop || full_estop) {
-            motor_us[0] = 0;
-            motor_us[1] = 0;
-            motor_us[2] = 0;
-            motor_us[3] = 0;
+            motor_us[0] = ESC_MIN_US;
+            motor_us[1] = ESC_MIN_US;
+            motor_us[2] = ESC_MIN_US;
+            motor_us[3] = ESC_MIN_US;
         }
 
         esc_write_us_4(motor_us);

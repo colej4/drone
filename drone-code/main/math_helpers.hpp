@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-#define G 9.81
+#define GRAVITATIONAL_ACCELERATION 9.81
 
 typedef struct {
     float w;

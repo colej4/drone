@@ -94,14 +94,14 @@ float thrust_multiplier_from_quat(Quaternion quat) {
 }
 
 static Vector3 joystick_inputs_to_forces(IbusMessage* message) {
-    float force_z = message->throttle * 1.5f * G;
+    float force_z = message->throttle * 1.5f * GRAVITATIONAL_ACCELERATION;
     float force_x = -CONTROLLER_SENS * message->roll * force_z;
     float force_y = -CONTROLLER_SENS * message->pitch * force_z;
     return (Vector3){force_x, force_y, force_z};
 }
 
 float joystick_input_to_global_thrust(IbusMessage* message) {
-    float thrust = message->throttle * 2.0f * G;
+    float thrust = message->throttle * 2.0f * GRAVITATIONAL_ACCELERATION;
     if (thrust > MAX_THRUST_NEWTONS) {
         ESP_LOGW(TAG, "Thrust command clamped from %f to %f", thrust, MAX_THRUST_NEWTONS);
         thrust = MAX_THRUST_NEWTONS;

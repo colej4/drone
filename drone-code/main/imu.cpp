@@ -134,7 +134,7 @@ imu_data_t imu_unit_convert(imu_raw_data_t *raw)
 {
     imu_data_t data;
 
-    const float accel_scale = G / 8192.0f; // m/s² per LSB
+    const float accel_scale = GRAVITATIONAL_ACCELERATION / 8192.0f; // m/s² per LSB
     data.ax = raw->ax * accel_scale;
     data.ay = raw->ay * accel_scale;
     data.az = raw->az * accel_scale;
@@ -202,7 +202,7 @@ void calibrate_imu() {
 
     float mag = sqrtf(ax*ax + ay*ay + az*az);
     float gx = ax/mag, gy = ay/mag, gz = az/mag;
-    accel_scale_bias = mag / G;
+    accel_scale_bias = mag / GRAVITATIONAL_ACCELERATION;
     const float ux=0, uy=0, uz=1; //unit vec up
 
     // Cross and dot

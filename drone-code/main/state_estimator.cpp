@@ -66,7 +66,7 @@ void state_estimator_task(void *arg) {
 
 
             float accel_mag = sqrtf(imu_data.ax * imu_data.ax + imu_data.ay * imu_data.ay + imu_data.az * imu_data.az);
-            if (fabsf(accel_mag - G) < 0.3f && fabsf(accel_roll) < (0.1f) && fabsf(accel_pitch) < (0.1f)) {
+            if (fabsf(accel_mag - GRAVITATIONAL_ACCELERATION) < 0.3f && fabsf(accel_roll) < (0.1f) && fabsf(accel_pitch) < (0.1f)) {
                 valid_accel_count++;
             } else {
                 valid_accel_count = 0;
