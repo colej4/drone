@@ -145,10 +145,10 @@ void ibus_task(void *arg) {
                                     if (throttle < 0.02f) {
                                         msg.throttle = 0.0f; // deadzone
                                     }
-                                    if (fabsf(roll) < 0.01f) {
+                                    if (fabsf(roll) < 0.025f) {
                                         msg.roll = 0.0f; // deadzone
                                     }
-                                    if (fabsf(pitch) < 0.01f) {
+                                    if (fabsf(pitch) < 0.025f) {
                                         msg.pitch = 0.0f; // deadzone
                                     }
 

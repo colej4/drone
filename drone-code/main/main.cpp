@@ -65,6 +65,7 @@ extern "C" void app_main(void)
     //prevent spam in logs from sd card operation
     esp_log_level_set("control", ESP_LOG_VERBOSE);
     esp_log_level_set("state_estimator", ESP_LOG_VERBOSE);
+    esp_log_level_set("feedforward", ESP_LOG_VERBOSE);
 
 
 

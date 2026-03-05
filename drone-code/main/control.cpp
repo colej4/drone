@@ -34,17 +34,23 @@ static const char* TAG = "control";
 #define ESC_MIN_US          1000
 #define ESC_MAX_US          2000
 // Control configuration
-#define KP_VEL 0.8
+#define KP_VEL 0.1
 #define KI_VEL 0.0
-#define KD_VEL 0.0
+#define KD_VEL 0.0005
 #define INTEGRAL_BOUND 0.0
-#define DERIVATIVE_EMA_GAIN 0.12
+#define DERIVATIVE_EMA_GAIN 1.0
+
+#define KP_VEL_YAW 0.01
+#define KI_VEL_YAW 0.0
+#define KD_VEL_YAW 0.0
 
 #define BATTERY_VOLTAGE 11.1f
 #define CONTROLLER_YAW_SENSITIVITY 0.5f
 
-#define KP_POS 0.3f // P controller to convert from angle to angular rate
-#define KD_POS 0.00005f
+#define KP_POS 10.0f // P controller to convert from angle to angular rate
+#define KD_POS 0.15f
+
+static bool full_estop = false;
 
 
 static inline float clampf(float x, float lo, float hi)
@@ -130,9 +136,9 @@ void control_task(void* arg)
             initial_timestamp
         );
     }
-    pid_controllers[2]->kP = KP_VEL * 0.1f; // reduce P gain for yaw
-    pid_controllers[2]->kI = KI_VEL * 0.1f; // reduce I gain for yaw
-    pid_controllers[2]->kD = KD_VEL * 0.1f; // reduce D gain for yaw
+    pid_controllers[2]->kP = KP_VEL_YAW; // reduce P gain for yaw
+    pid_controllers[2]->kI = KI_VEL_YAW; // reduce I gain for yaw
+    pid_controllers[2]->kD = KD_VEL_YAW; // reduce D gain for yaw
 
 
     PIDController* pos_pid_controllers[2]; // roll, pitch position to rate
@@ -145,6 +151,8 @@ void control_task(void* arg)
             initial_timestamp
         );
     }
+
+    float estimated_motor_speeds[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 
     while (1) {
@@ -214,7 +222,7 @@ void control_task(void* arg)
         }
 
         bool emergency_stop = false;
-        if (controller_input.vra > 0.5f) {
+        if (controller_input.vra < 0.5f) {
             emergency_stop = true;
         }
         if (timestamp - state_estimate.timestamp > 20000) {
@@ -225,7 +233,12 @@ void control_task(void* arg)
             //100 ms timeout for estop from no controller input
             emergency_stop = true;
         }
-        if (emergency_stop) {
+
+        if (fabs(orientation_euler.x) > M_PI / 4 || fabs(orientation_euler.y) > M_PI / 4) {
+            //estop if we are tilted more than 45 degrees in any direction, likely indicates a crash
+            full_estop = true;
+        }
+        if (emergency_stop || full_estop) {
             motor_us[0] = 0;
             motor_us[1] = 0;
             motor_us[2] = 0;
