@@ -3,8 +3,10 @@
 
 #include "math_helpers.hpp"
 #include "ibus_protocol.hpp"
+#include <Eigen/Dense>
 Quaternion ref_quat_from_global_forces(Vector3 global_force_vec, float heading);
 Vector3 euler_error_from_quats(Quaternion q_ref, Quaternion q_meas);
+static Eigen::Matrix<float, 4, 4> moments_and_forces_from_omega_squared_matrix(float com_offset_x, float com_offset_y)
 void calculate_control_input_from_moments(float* control_input_array, float m_x, float m_y, float m_z, float thrust_z);
 Quaternion joystick_inputs_to_ref_quat_headingless(IbusMessage* message);
 float joystick_input_to_global_thrust(IbusMessage* message);

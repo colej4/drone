@@ -23,7 +23,7 @@ static const char* TAG = "feedforward";
 #define MOTOR_RESISTANCE 0.1f //ohms
 
 //constants for converting forces and moments to motor speed
-#define MOTOR_LEVER_ARM 0.15556 //0.22 / sqrt(2) meters for 440mm rod
+#define MOTOR_LEVER_ARM 0.17 //~0.24 / sqrt(2) meters for 440mm rod + mounting plate
 #define MAX_OMEGA_SQUARED 5234944.0f // approx (2288 rad/s)^2 (approximation of 2200kv motor at 10V)
 #define OMEGA_SQUARED_OVER_FORCE (1.0 / KT) // proportionality constant between force and omega^2 (approximation from MATLAB) Should be 854359
 #define OMEGA_SQUARED_OVER_Z_MOMENT (1.0 / (4.0 * KQ)) // proportionality constant between z moment and omega^2 (approximation from MATLAB) approx 1.41e7
@@ -38,6 +38,9 @@ static const char* TAG = "feedforward";
 
 //for controller
 #define CONTROLLER_SENS 0.1 //max command (as fraction of upwards thrust)
+
+static Eigen::Matrix4f w2overmf = moments_and_forces_from_omega_squared_matrix(0.005838f, 0.001303f).inverse();
+
 
 Quaternion ref_quat_from_global_forces(Vector3 global_force_vec, float heading) {
     float force_norm = sqrtf(global_force_vec.x * global_force_vec.x +
@@ -126,36 +129,69 @@ Vector3 euler_error_from_quats(Quaternion q_ref, Quaternion q_meas) {
     return euler_error;
 }
 
+static Eigen::Matrix<float, 4, 4> moments_and_forces_from_omega_squared_matrix(float com_offset_x, float com_offset_y) {
+    float x1 = MOTOR_LEVER_ARM - com_offset_x;
+    float y1 = MOTOR_LEVER_ARM - com_offset_y;
+    float x2 = MOTOR_LEVER_ARM - com_offset_x;
+    float y2 = -MOTOR_LEVER_ARM - com_offset_y;
+    float x3 = -MOTOR_LEVER_ARM - com_offset_x;
+    float y3 = -MOTOR_LEVER_ARM - com_offset_y;
+    float x4 = -MOTOR_LEVER_ARM - com_offset_x;
+    float y4 = MOTOR_LEVER_ARM - com_offset_y;
+
+    Eigen::Matrix<float, 4, 4> m;
+    m(0, 0) = KT * (y1);
+    m(0, 1) = KT * (y2);
+    m(0, 2) = KT * (y3);
+    m(0, 3) = KT * (y4);
+    m(1, 0) = KT * (x1);
+    m(1, 1) = KT * (x2);
+    m(1, 2) = KT * (x3);
+    m(1, 3) = KT * (x4);
+    m(2, 0) = -KQ;
+    m(2, 1) = KQ;
+    m(2, 2) = -KQ;
+    m(2, 3) = KQ;
+    m(3, 0) = KT;
+    m(3, 1) = KT;
+    m(3, 2) = KT;
+    m(3, 3) = KT;
+    return m;
+}
+
 //thrust is in local frame here, omega_squared_array of len 4
 static void calculate_omega_squared(float* omega_squared_array, float m_x, float m_y, float m_z, float thrust_z) {
-    float omega_squared_due_to_moments[4];
+    Eigen::Matrix<float, 4, 1> m;
+    m(0, 0) = m_x;
+    m(1, 0) = m_y;
+    m(2, 0) = m_z;
+    m(3, 0) = 0.0;
+    Eigen::Matrix<float, 4, 1> f;
+    f(0, 0) = 0.0f;
+    f(1, 0) = 0.0f;
+    f(2, 0) = 0.0f;
+    f(3, 0) = thrust_z;
+ 
+    Eigen::Matrix<float, 4, 1> omega_squared_due_to_moments = w2overmf * m;
+    Eigen::Matrix<float, 4, 1> omega_squared_due_to_thrust = w2overmf * f;
 
-    omega_squared_due_to_moments[0] = (OMEGA_SQUARED_OVER_FORCE * (m_x + m_y) / (MOTOR_LEVER_ARM * 4.0) - OMEGA_SQUARED_OVER_Z_MOMENT * m_z);
-    omega_squared_due_to_moments[1] = (OMEGA_SQUARED_OVER_FORCE * (-m_x + m_y) / (MOTOR_LEVER_ARM * 4.0)) + OMEGA_SQUARED_OVER_Z_MOMENT * m_z;
-    omega_squared_due_to_moments[2] = (OMEGA_SQUARED_OVER_FORCE * (-m_x - m_y) / (MOTOR_LEVER_ARM * 4.0)) - OMEGA_SQUARED_OVER_Z_MOMENT * m_z;
-    omega_squared_due_to_moments[3] = (OMEGA_SQUARED_OVER_FORCE * (m_x - m_y) / (MOTOR_LEVER_ARM * 4.0)) + OMEGA_SQUARED_OVER_Z_MOMENT * m_z;
-
-    float omega_squared_due_to_thrust = OMEGA_SQUARED_OVER_FORCE * thrust_z / 4.0f;
-
-    float min_omega_squared_due_to_moments = omega_squared_due_to_moments[0];
+    float saturation_factor = 1.0f;
     for(int i = 0; i < 4; i++) {
-        if (omega_squared_due_to_moments[i] < min_omega_squared_due_to_moments) {
-            min_omega_squared_due_to_moments = omega_squared_due_to_moments[i];
+        if (omega_squared_due_to_moments(i) < 0.0f && fabs(omega_squared_due_to_moments(i)) > omega_squared_due_to_thrust(i)) {
+            float potential_saturation_factor = omega_squared_due_to_thrust(i) / (fabs(omega_squared_due_to_moments(i)) + 1e-5f);
+            if (potential_saturation_factor < saturation_factor) {
+                saturation_factor = potential_saturation_factor;
+            }
         }
     }
 
-    float saturation_factor = 1.0f;
 
-    if (min_omega_squared_due_to_moments < 0.0f && fabs(min_omega_squared_due_to_moments) > omega_squared_due_to_thrust) {
-        saturation_factor = omega_squared_due_to_thrust / (fabs(min_omega_squared_due_to_moments) + 1e-5f);
-    }
+    ESP_LOGV(TAG, "saturation_factor: %fy", saturation_factor);
 
-    ESP_LOGV(TAG, "saturation_factor: %f, min_omega_squared_due_to_moments: %f, omega_squared_due_to_thrust: %f", saturation_factor, min_omega_squared_due_to_moments, omega_squared_due_to_thrust);
-
-    omega_squared_array[0] = saturation_factor * omega_squared_due_to_moments[0] + omega_squared_due_to_thrust;
-    omega_squared_array[1] = saturation_factor * omega_squared_due_to_moments[1] + omega_squared_due_to_thrust;
-    omega_squared_array[2] = saturation_factor * omega_squared_due_to_moments[2] + omega_squared_due_to_thrust;
-    omega_squared_array[3] = saturation_factor * omega_squared_due_to_moments[3] + omega_squared_due_to_thrust;
+    omega_squared_array[0] = saturation_factor * omega_squared_due_to_moments(0) + omega_squared_due_to_thrust(0);
+    omega_squared_array[1] = saturation_factor * omega_squared_due_to_moments(1) + omega_squared_due_to_thrust(1);
+    omega_squared_array[2] = saturation_factor * omega_squared_due_to_moments(2) + omega_squared_due_to_thrust(2);
+    omega_squared_array[3] = saturation_factor * omega_squared_due_to_moments(3) + omega_squared_due_to_thrust(3);
 }
 
 //requires control_input_array and omega_squared_array to be of length 4
