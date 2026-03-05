@@ -28,9 +28,9 @@ float dot(Vector3 v1, Vector3 v2);
 Vector3 cross(Vector3 v1, Vector3 v2);
 int signum(int x);
 template<typename State, typename ControlInput, typename Func>
-std::function<State(const State&, const ControlInput&)> rk4_step(Func&& f, float dt) {
+std::function<State(const State&, const ControlInput&, const float)> rk4_step(Func&& f) {
     auto func = std::forward<Func>(f);
-    return [func = std::move(func), dt](const State& x, const ControlInput& u) {
+    return [func = std::move(func)](const State& x, const ControlInput& u, const float dt) {
         const State k1 = func(x, u);
         const State k2 = func(x + (dt * 0.5f) * k1, u);
         const State k3 = func(x + (dt * 0.5f) * k2, u);
@@ -41,13 +41,14 @@ std::function<State(const State&, const ControlInput&)> rk4_step(Func&& f, float
 }
 
 template<typename State, typename ControlInput, typename Func>
-std::function<State(const State&, const ControlInput&)> euler_step(Func&& f, float dt) {
+std::function<State(const State&, const ControlInput&, const float)> euler_step(Func&& f) {
     auto func = std::forward<Func>(f);
-    return [func = std::move(func), dt](const State& x, const ControlInput& u) {
+    return [func = std::move(func)](const State& x, const ControlInput& u, const float dt) {
         const State rate_of_change = func(x, u);
         return x + dt * rate_of_change;
     };
 }
+
 
 Vector3 quat_to_euler(Quaternion q);
 float wrap_angle_pi(float angle);

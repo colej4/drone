@@ -10,17 +10,20 @@ template <int StateDim, typename T = float> class ExtendedKalmanFilter {
 		Eigen::Vector<T, StateDim> mean;
 		Eigen::Matrix<T, StateDim, StateDim> covariance;
 
-		ExtendedKalmanFilter(Eigen::Vector<T, StateDim> initial_mean,
-							 Eigen::Matrix<T, StateDim, StateDim> initial_covariance);
+		ExtendedKalmanFilter(Eigen::Vector<T, StateDim> initial_mean, Eigen::Matrix<T, StateDim, StateDim> initial_covariance) {
+			this->mean = initial_mean;
+			this->covariance = initial_covariance;
+		}
 
 		template<typename ControlInput, typename StateFunc, typename JacobianFunc>
 		void predict(
 			StateFunc&& f,
 			JacobianFunc&& F,
 			Eigen::Matrix<T, StateDim, StateDim> process_noise,
-			const ControlInput& u) {
-			mean = std::forward<StateFunc>(f)(mean, u);
-			Eigen::Matrix<T, StateDim, StateDim> F_jacobian = std::forward<JacobianFunc>(F)(mean, u);
+			const ControlInput& u,
+			float dt) {
+			mean = std::forward<StateFunc>(f)(mean, u, dt);
+			Eigen::Matrix<T, StateDim, StateDim> F_jacobian = std::forward<JacobianFunc>(F)(mean, u, dt);
 			covariance = F_jacobian * covariance * F_jacobian.transpose() + process_noise;
 		}
 
