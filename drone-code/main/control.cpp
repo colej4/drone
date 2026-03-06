@@ -35,13 +35,13 @@ static const char* TAG = "control";
 #define ESC_MAX_US          2000
 // Control configuration
 #define KP_VEL 0.2
-#define KI_VEL 0.08
+#define KI_VEL 0.1
 #define KD_VEL 0.005
 #define INTEGRAL_BOUND 0.15
 #define DERIVATIVE_EMA_GAIN 1.0
 
-#define KP_VEL_YAW 0.1
-#define KI_VEL_YAW 0.0
+#define KP_VEL_YAW 0.15
+#define KI_VEL_YAW 0.35
 #define KD_VEL_YAW 0.0
 
 #define BATTERY_VOLTAGE 11.1f

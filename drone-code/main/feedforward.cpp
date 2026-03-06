@@ -37,7 +37,7 @@ static const char* TAG = "feedforward";
 
 
 //for controller
-#define CONTROLLER_SENS 0.1 //max command (as fraction of upwards thrust)
+#define CONTROLLER_SENS 0.25 //max command (as fraction of upwards thrust)
 
 static Eigen::Matrix4f w2overmf = moments_and_forces_from_omega_squared_matrix(0.005838f, 0.001303f).inverse();
 
