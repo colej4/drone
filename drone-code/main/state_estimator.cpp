@@ -97,7 +97,7 @@ void state_estimator_task(void *arg) {
             }
 
             StateEstimate state_estimate;
-            state_estimate.orientation = orientation;
+            state_estimate.orientation = ekf_orientation;
             state_estimate.euler_rates = average_euler_rates;
             state_estimate.timestamp = timestamp;
 
