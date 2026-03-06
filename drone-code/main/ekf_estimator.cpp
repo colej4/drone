@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include "ekf.hpp"
+#include "ekf_estimator.hpp"
 #include "math_helpers.hpp"
 
 #include "esp_log.h"
@@ -126,62 +127,62 @@ Eigen::Matrix<float, 3, 7> accelerometer_jacobian_from_state(State state) {
     return H;
 }
 
-class EKF_state_estimator {
-    public:
-        ExtendedKalmanFilter<7> ekf;
-        std::function<State(State, ControlInput, float)> f;
-        uint64_t last_gyro_timestamp_us;
-        Eigen::Matrix<float, 7, 7> process_noise_covariance;
-        Eigen::Matrix<float, 3, 3> accelerometer_measurement_noise_covariance;
-        float imu_dt_s;
+EKFStateEstimator::EKFStateEstimator(State initial_mean, Eigen::Matrix<float, 7, 7> initial_covariance, uint64_t initial_timestamp_us)
+    : ekf(initial_mean, initial_covariance) {
+        this->last_gyro_timestamp_us = initial_timestamp_us;
+        this->f = rk4_step<State, ControlInput>(state_rate_from_state_and_input);
+        this->process_noise_covariance = PROCESS_NOISE;
+        this->accelerometer_measurement_noise_covariance = ACCEL_MEASUREMENT_NOISE;
+    }
 
-        EKF_state_estimator(State initial_mean, Eigen::Matrix<float, 7, 7> initial_covariance, uint32_t imu_rate_hz, uint64_t initial_timestamp_us)
-            : ekf(initial_mean, initial_covariance) {
-                this->imu_dt_s = 1.0f / (float)imu_rate_hz;
-                this->last_gyro_timestamp_us = initial_timestamp_us;
-                this->f = rk4_step<State, ControlInput>(state_rate_from_state_and_input);
-                this->process_noise_covariance = PROCESS_NOISE;
-                this->accelerometer_measurement_noise_covariance = ACCEL_MEASUREMENT_NOISE;
-            }
-
-        void predict(ControlInput control_input, uint64_t timestamp_us) {
-            if (timestamp_us <= this->last_gyro_timestamp_us) {
-                ESP_LOGW(TAG, "Non-increasing timestamp in EKF predict step");
-                return;
-            }
-            uint64_t dt_us = timestamp_us - this->last_gyro_timestamp_us;
-            float dt = (float)dt_us / 1e6f;
-            this->last_gyro_timestamp_us = timestamp_us;
-            ekf.predict(this->f,
-                        jacobian_from_state_and_input,
-                        this->process_noise_covariance * dt, 
-                        control_input,
-                        dt
-                    );
-            normalize_quaternion();
-        }
-
-        void normalize_quaternion() {
-            float q0 = ekf.mean(0);
-            float q1 = ekf.mean(1);
-            float q2 = ekf.mean(2);
-            float q3 = ekf.mean(3);
-            float norm = sqrtf(q0*q0 + q1*q1 + q2*q2 + q3*q3);
-            if (norm > 0.0f) {
-                ekf.mean(0) /= norm;
-                ekf.mean(1) /= norm;
-                ekf.mean(2) /= norm;
-                ekf.mean(3) /= norm;
-            }
-        }
-
-        void accelerometer_update(ControlInput accel_measurement) {
-            ekf.update<3>(
-                accel_measurement,
-                accelerometer_measurement_from_state,
-                accelerometer_jacobian_from_state,
-                this->accelerometer_measurement_noise_covariance
+void EKFStateEstimator::predict(ControlInput control_input, uint64_t timestamp_us) {
+    if (timestamp_us <= this->last_gyro_timestamp_us) {
+        ESP_LOGW(TAG, "Non-increasing timestamp in EKF predict step");
+        return;
+    }
+    uint64_t dt_us = timestamp_us - this->last_gyro_timestamp_us;
+    float dt = (float)dt_us / 1e6f;
+    this->last_gyro_timestamp_us = timestamp_us;
+    ekf.predict(this->f,
+                jacobian_from_state_and_input,
+                this->process_noise_covariance * dt, 
+                control_input,
+                dt
             );
-            normalize_quaternion();
-        }
-};
+    normalize_quaternion();
+}
+
+void EKFStateEstimator::normalize_quaternion() {
+    float q0 = ekf.mean(0);
+    float q1 = ekf.mean(1);
+    float q2 = ekf.mean(2);
+    float q3 = ekf.mean(3);
+    float norm = sqrtf(q0*q0 + q1*q1 + q2*q2 + q3*q3);
+    if (norm > 0.0f) {
+        ekf.mean(0) /= norm;
+        ekf.mean(1) /= norm;
+        ekf.mean(2) /= norm;
+        ekf.mean(3) /= norm;
+    }
+}
+
+void EKFStateEstimator::accelerometer_update(ControlInput accel_measurement) {
+    ekf.update<3>(
+        accel_measurement,
+        accelerometer_measurement_from_state,
+        accelerometer_jacobian_from_state,
+        this->accelerometer_measurement_noise_covariance
+    );
+    normalize_quaternion();
+}
+
+Vector3 EKFStateEstimator::get_orientation_euler() {
+    Quaternion q = {
+        ekf.mean(0),
+        ekf.mean(1),
+        ekf.mean(2),
+        ekf.mean(3)
+    };
+    
+    return quat_to_euler(q);
+}

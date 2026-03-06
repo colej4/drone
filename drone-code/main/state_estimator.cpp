@@ -7,6 +7,8 @@
 #include "imu.hpp"
 #include "math_helpers.hpp"
 #include "state_estimator.hpp"
+#include "ekf.hpp"
+#include "ekf_estimator.hpp"
 
 //esp logging
 #include "esp_log.h"
@@ -26,10 +28,21 @@ void state_estimator_task(void *arg) {
     QueueHandle_t state_estimate_mailbox = config->state_estimate_mailbox;
 
     uint64_t last_timestamp = 0;
-    uint64_t last_print_timestamp = 0;
     int valid_accel_count = 0;
 
     float accel_roll = 0.0f, accel_pitch = 0.0f;
+
+    Eigen::Matrix<float, 7, 7> initial_covariance = Eigen::Matrix<float, 7, 7>::Identity() * 0.1f;
+    Eigen::Matrix<float, 7, 1> initial_mean = (Eigen::Matrix<float, 7, 1>){1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+
+    EKFStateEstimator* ekf_estimator =
+        new EKFStateEstimator(
+            initial_mean,
+            initial_covariance,
+            0
+        );
+
+
 
     while (1) {
         timestamped_imu_data_t ts_imu_data;
@@ -38,6 +51,7 @@ void state_estimator_task(void *arg) {
             uint64_t timestamp = ts_imu_data.timestamp;
             if (last_timestamp == 0) {
                 last_timestamp = timestamp;
+                ekf_estimator->last_gyro_timestamp_us = timestamp;
                 continue;
             }
             float dt = (float)(timestamp - last_timestamp) / 1e6f;
@@ -45,6 +59,9 @@ void state_estimator_task(void *arg) {
             orientation.x += imu_data.gx * dt; // assuming 1 ms timestep
             orientation.y += imu_data.gy * dt;
             orientation.z += imu_data.gz * dt;
+
+            Eigen::Vector3f predict_input = Eigen::Vector3f(imu_data.gx, imu_data.gy, imu_data.gz);
+            ekf_estimator->predict(predict_input, timestamp);
 
             euler_rates[gyro_rate_index].x = imu_data.gx;
             euler_rates[gyro_rate_index].y = imu_data.gy;
@@ -74,6 +91,7 @@ void state_estimator_task(void *arg) {
 
             if (valid_accel_count > 10) {
                 // Fuse accelerometer data
+                ekf_estimator->accelerometer_update(Eigen::Vector3f(imu_data.ax, imu_data.ay, imu_data.az));
                 orientation.x = 0.9997 * orientation.x + 0.0003 * accel_roll;
                 orientation.y = 0.9997 * orientation.y + 0.0003 * accel_pitch;
             }
@@ -87,7 +105,12 @@ void state_estimator_task(void *arg) {
 
             xQueueOverwrite(state_estimate_mailbox, &state_estimate);
 
-            // ESP_LOGV(TAG, "Roll: %f, Pitch: %f, Yaw: %f", orientation.x, orientation.y, orientation.z);
+            Vector3 ekf_orientation = ekf_estimator->get_orientation_euler();
+
+            ESP_LOGV(TAG, "Roll: %f, Pitch: %f, Yaw: %f", orientation.x, orientation.y, orientation.z);
+
+            ESP_LOGV(TAG, "EKF Roll: %f, EKF Pitch: %f, EKF Yaw: %f", ekf_orientation.x, ekf_orientation.y, ekf_orientation.z);
+            
             // ESP_LOGV(TAG, "Orientation - Roll: %f, Pitch: %f, Yaw: %f | Euler Rates - gx: %f, gy: %f, gz: %f",
             //          orientation.x, orientation.y, orientation.z,
             //          euler_rates.x, euler_rates.y, euler_rates.z);
