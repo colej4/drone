@@ -1,4 +1,4 @@
-26781855585001418
+26788954130530003
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -62467,6 +62467,13 @@ GDT 3R-6
 0
 3
 3
+GT-USB-7010B
+G-SWITCH_GT-USB-7010B
+
+
+0
+16
+16
 Heatsink
 Heatsink_35x26mm_1xFixation3mm_Fischer-SK486-35
 Heatsink, 35mm x 26mm, 1x Fixation 3mm, Fischer SK486-35
@@ -106406,3 +106413,24 @@ Varistor VF
 0
 2
 2
+footprints
+SOT23-6L_STM
+
+USBLC6-4SC6 
+0
+6
+6
+footprints
+SOT23-6L_STM-L
+
+USBLC6-4SC6 
+0
+6
+6
+footprints
+SOT23-6L_STM-M
+
+USBLC6-4SC6 
+0
+6
+6

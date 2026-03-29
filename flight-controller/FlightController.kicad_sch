@@ -5759,6 +5759,12 @@
 		(uuid "966cce01-dfc0-46b8-8932-36084d78274d")
 	)
 	(junction
+		(at 226.06 368.3)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "97a3be64-75e5-4b09-b455-d43198964ac7")
+	)
+	(junction
 		(at 34.29 31.75)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6148,6 +6154,16 @@
 	)
 	(wire
 		(pts
+			(xy 226.06 368.3) (xy 222.25 368.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "52640bdc-d8ee-4bf4-bf29-fa052ea0e25c")
+	)
+	(wire
+		(pts
 			(xy 76.2 351.79) (xy 76.2 354.33)
 		)
 		(stroke
@@ -6398,7 +6414,7 @@
 	)
 	(wire
 		(pts
-			(xy 229.87 368.3) (xy 222.25 368.3)
+			(xy 229.87 368.3) (xy 226.06 368.3)
 		)
 		(stroke
 			(width 0)
@@ -7486,6 +7502,28 @@
 			)
 		)
 	)
+	(global_label "I2C_SDA"
+		(shape input)
+		(at 194.31 171.45 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7464d1b2-3079-4cc3-9b56-69d2bff51bd3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 204.9152 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "I2C_SCL"
 		(shape input)
 		(at 265.43 140.97 180)
@@ -8146,6 +8184,28 @@
 			)
 		)
 	)
+	(global_label "I2C_SCL"
+		(shape input)
+		(at 194.31 168.91 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c62fa83a-9ad4-4eb1-ac7d-9eb456c5fdb9")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 204.8547 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "SD_CLK"
 		(shape input)
 		(at 294.64 109.22 180)
@@ -8576,6 +8636,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 189.23 130.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 189.23 130.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "14636d6e-5f8f-4eaa-9040-49ab49afa95a")
 		)
@@ -8638,6 +8716,24 @@
 			)
 		)
 		(property "Description" "Mounting Hole without connection"
+			(at 204.47 323.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 204.47 323.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 204.47 323.85 0)
 			(effects
 				(font
@@ -8767,6 +8863,24 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 222.25 375.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 222.25 375.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 222.25 375.92 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8909,6 +9023,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 165.1 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 165.1 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "33769777-1387-413b-a934-bab6635d6825")
 		)
@@ -8974,6 +9106,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 39.37 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 39.37 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 39.37 63.5 0)
 			(effects
 				(font
@@ -9119,6 +9269,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 166.37 321.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 166.37 321.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4a2a8f79-b732-4e0c-84e7-3f7dc18ab27c")
 		)
@@ -9181,6 +9349,24 @@
 			)
 		)
 		(property "Description" "4.7 μF, 25 V, Ceramic, 1206 CGA5L1X7R1E475K160AC, TDK"
+			(at 27.94 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 27.94 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 27.94 95.25 0)
 			(effects
 				(font
@@ -9259,6 +9445,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 276.86 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 276.86 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "08e4226b-ca2a-4aae-8b74-227759236a64")
 		)
@@ -9329,6 +9533,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 49.53 312.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 49.53 312.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "52271225-d32d-48a3-910b-e736269dfa60")
 		)
@@ -9339,6 +9561,73 @@
 			(project ""
 				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
 					(reference "C8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 194.31 176.53 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "22b8c26f-1b62-485c-ae25-38026c3cbab4")
+		(property "Reference" "#PWR056"
+			(at 190.5 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 198.12 176.5299 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 194.31 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 194.31 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 194.31 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f2ae96c7-3b57-4e71-a91f-09f944c300fb")
+		)
+		(instances
+			(project "FlightController"
+				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
+					(reference "#PWR056")
 					(unit 1)
 				)
 			)
@@ -9397,6 +9686,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 54.61 368.3 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 54.61 368.3 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "23c24523-79ce-4507-b97c-424ef20a1638")
 		)
@@ -9407,6 +9714,72 @@
 			(project "FlightController"
 				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
 					(reference "C10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 226.06 368.3 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2c5ed56d-9657-48ea-853e-c4f91a76d9b3")
+		(property "Reference" "#FLG04"
+			(at 226.06 366.395 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 226.06 363.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 226.06 368.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 226.06 368.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 226.06 368.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d2aa3c98-ea20-4fae-a8b2-37c4489e96cc")
+		)
+		(instances
+			(project ""
+				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
+					(reference "#FLG04")
 					(unit 1)
 				)
 			)
@@ -9719,6 +10092,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 74.93 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 74.93 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "SH4"
 			(uuid "d2c98ed1-a561-40ba-beb4-eac567c5bbe3")
 		)
@@ -9963,6 +10354,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 72.39 351.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 72.39 351.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "295733e0-e140-42d6-98f9-ee030c432175")
 		)
@@ -10023,6 +10432,24 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated"
+			(at 165.1 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 165.1 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 165.1 124.46 0)
 			(effects
 				(font
@@ -10168,6 +10595,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 200.66 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 200.66 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "796c1f59-3063-457c-9ef9-35631c2a6b1e")
 		)
@@ -10231,6 +10676,24 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated"
+			(at 213.36 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 213.36 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 213.36 124.46 0)
 			(effects
 				(font
@@ -10446,6 +10909,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 276.86 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 276.86 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "6337cbf4-f84b-4e7d-8eb1-2d71ad78497f")
 		)
@@ -10648,6 +11129,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 204.47 335.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 204.47 335.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project ""
 				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
@@ -10704,6 +11203,24 @@
 			)
 		)
 		(property "Description" ""
+			(at 171.45 365.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 171.45 365.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 171.45 365.76 0)
 			(effects
 				(font
@@ -11258,6 +11775,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 213.36 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 213.36 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "4d348552-eb45-4a7c-957b-30530eb2c188")
 		)
@@ -11561,7 +12096,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2.7k"
+		(property "Value" "5.1k"
 			(at 281.94 135.8899 0)
 			(effects
 				(font
@@ -11589,6 +12124,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 279.4 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 279.4 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 279.4 134.62 0)
 			(effects
 				(font
@@ -11659,6 +12212,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 36.83 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 36.83 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 36.83 123.19 0)
 			(effects
 				(font
@@ -11805,6 +12376,24 @@
 		)
 		(property "Sim.Pins" "1=K 2=A"
 			(at 166.37 331.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 166.37 331.47 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 166.37 331.47 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12200,6 +12789,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 68.58 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 68.58 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "5"
 			(uuid "00f58df2-045b-4306-b183-b1fad260879a")
 		)
@@ -12252,6 +12859,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 194.31 173.99 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7f7ae9fd-6796-4421-9724-5d80fab41bb0")
+		(property "Reference" "#PWR038"
+			(at 200.66 173.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 198.12 173.9899 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 194.31 173.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 194.31 173.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 194.31 173.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fadafa6e-d5a5-40f4-91cb-da6fdcb79d5a")
+		)
+		(instances
+			(project "FlightController"
+				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
+					(reference "#PWR038")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "RF_Module:ESP32-S3-WROOM-1")
 		(at 309.88 88.9 0)
 		(unit 1)
@@ -12298,6 +12972,24 @@
 			)
 		)
 		(property "Description" "RF Module, ESP32-S3 SoC, Wi-Fi 802.11b/g/n, Bluetooth, BLE, 32-bit, 3.3V, onboard antenna, SMD"
+			(at 309.88 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 309.88 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 309.88 88.9 0)
 			(effects
 				(font
@@ -12619,6 +13311,24 @@
 					(size 1.27 1.27)
 				)
 				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 63.5 372.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 63.5 372.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -13035,6 +13745,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 76.2 299.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 76.2 299.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "12"
 			(uuid "0b0fec0f-0e8b-403a-9e4e-905341afe958")
 		)
@@ -13278,6 +14006,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 91.44 200.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 91.44 200.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "af9ce3a4-8c8f-4655-931f-845b4c8eff53")
 		)
@@ -13420,6 +14166,98 @@
 			(project ""
 				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
 					(reference "#PWR048")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x04_Pin")
+		(at 189.23 171.45 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a04a12cf-f181-4172-a6e4-57fb760ed349")
+		(property "Reference" "J6"
+			(at 189.865 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_01x04_Pin"
+			(at 189.865 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+			(at 189.23 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 189.23 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 189.23 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 189.23 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 189.23 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "4"
+			(uuid "73a4f9a5-0054-4515-bc30-1b3e7de8b82c")
+		)
+		(pin "3"
+			(uuid "1075b76a-f29c-432f-b09a-2d2618099b1e")
+		)
+		(pin "1"
+			(uuid "272801f5-f8bb-4596-90de-cd98b93cd4af")
+		)
+		(pin "2"
+			(uuid "417abc2c-1fd6-4059-9baf-2d6cbb4504c6")
+		)
+		(instances
+			(project "FlightController"
+				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
+					(reference "J6")
 					(unit 1)
 				)
 			)
@@ -13811,6 +14649,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 99.06 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 99.06 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "a1f9cf76-8e3a-472c-a2fb-9f19cb7c7d1a")
 		)
@@ -13912,7 +14768,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2.7k"
+		(property "Value" "5.1k"
 			(at 271.78 135.8899 0)
 			(effects
 				(font
@@ -13940,6 +14796,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 269.24 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 269.24 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 269.24 134.62 0)
 			(effects
 				(font
@@ -14076,6 +14950,24 @@
 			)
 		)
 		(property "Description" "4.7 μF, 25 V, Ceramic, 1206 CGA5L1X7R1E475K160AC, TDK"
+			(at 34.29 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 34.29 41.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 34.29 41.91 0)
 			(effects
 				(font
@@ -14287,6 +15179,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 107.95 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 107.95 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "99fb9578-e1c1-4eb0-9bb6-14321d11ff06")
 		)
@@ -14347,6 +15257,24 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 165.1 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 165.1 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 165.1 171.45 0)
 			(effects
 				(font
@@ -14554,6 +15482,24 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated"
+			(at 165.1 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 165.1 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 165.1 154.94 0)
 			(effects
 				(font
@@ -14835,6 +15781,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 229.87 374.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 229.87 374.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "80cbe59e-8c12-4d21-84fd-c7bd3ec793b1")
 		)
@@ -14964,6 +15928,24 @@
 			)
 		)
 		(property "Description" "Mounting Hole without connection"
+			(at 204.47 328.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 204.47 328.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 204.47 328.93 0)
 			(effects
 				(font
@@ -15287,6 +16269,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 64.77 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 64.77 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "b0ba7e83-cb69-4e0b-8702-8e503fc7e77b")
 		)
@@ -15367,6 +16367,24 @@
 			)
 		)
 		(property "Description" "4.7 μF, 25 V, Ceramic, 1206 CGA5L1X7R1E475K160AC, TDK"
+			(at 109.22 35.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 109.22 35.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
 			(at 109.22 35.56 0)
 			(effects
 				(font
@@ -15552,6 +16570,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 195.58 265.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 195.58 265.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "G2"
 			(uuid "ca0b95bb-495f-44f5-9320-94e181fa1cf0")
 		)
@@ -15655,6 +16691,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 234.95 364.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 234.95 364.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8495748b-90f5-4609-9906-1e52c4e0936d")
 		)
@@ -15715,6 +16769,24 @@
 		)
 		(property "Description" "2.2-μH inductor XGL3530-222; Coilcraft"
 			(at 90.17 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 90.17 31.75 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 90.17 31.75 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15858,6 +16930,24 @@
 				(hide yes)
 			)
 		)
+		(property "CREATOR" ""
+			(at 204.47 317.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 204.47 317.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(instances
 			(project ""
 				(path "/795bf1ce-0430-4bc6-834b-2a27177888c4"
@@ -15980,6 +17070,24 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 91.44 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "CREATOR" ""
+			(at 91.44 210.82 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VERIFIER" ""
+			(at 91.44 210.82 90)
 			(effects
 				(font
 					(size 1.27 1.27)
